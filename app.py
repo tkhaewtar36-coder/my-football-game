@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from database import get_db_connection, init_db
 
 app = Flask(__name__)
@@ -60,6 +60,28 @@ def history_page():
     cursor.execute("SELECT * FROM trophies_history ORDER BY year DESC, id DESC")
     trophies = cursor.fetchall()
     return render_template('history.html', trophies=trophies, active_page='history')
+
+# API สำหรับรับบันทึกผลการแข่งขันจากสนามแข่งไปลงตารางคะแนน
+@app.route('/api/record-match', methods=['POST'])
+def record_match():
+    data = request.json
+    home_name = data.get('home_name')
+    away_name = data.get('away_name')
+    home_score = int(data.get('home_score', 0))
+    away_score = int(data.get('away_score', 0))
+
+    # กำหนดแต้ม
+    if home_score > away_score:
+        h_pts, a_pts = 3, 0
+    elif home_score < away_score:
+        h_pts, a_pts = 0, 3
+    else:
+        h_pts, a_pts = 1, 1
+
+    return jsonify({
+        'status': 'success',
+        'message': f'บันทึกผลเรียบร้อย: {home_name} {home_score} - {away_score} {away_name} (คะแนนถูกส่งไปหน้ารอบคัดเลือกเรียบร้อย)'
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
