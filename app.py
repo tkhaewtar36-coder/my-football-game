@@ -4,26 +4,25 @@ import random
 
 app = Flask(__name__)
 
-# --- DATABASE SETUP & EXTENDED DATA SEEDING ---
+# --- DATABASE SETUP & SEEDING ---
 def init_db():
     conn = sqlite3.connect(":memory:", check_same_thread=False)
     cursor = conn.cursor()
     
-    # 1. Teams Table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS teams (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            type TEXT NOT NULL, -- 'National' or 'Club'
+            type TEXT NOT NULL,
             country TEXT,
             confederation TEXT,
             rating INTEGER DEFAULT 70,
             fifa_ranking INTEGER DEFAULT 100,
-            league TEXT DEFAULT ''
+            league TEXT DEFAULT '',
+            points INTEGER DEFAULT 0
         )
     ''')
 
-    # 2. Managers Table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS managers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +34,6 @@ def init_db():
         )
     ''')
 
-    # 3. Players Table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS players (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,118 +46,49 @@ def init_db():
             stamina INTEGER DEFAULT 100,
             team_id INTEGER,
             career_goals INTEGER DEFAULT 0,
-            career_apps INTEGER DEFAULT 0,
-            history_log TEXT DEFAULT ''
+            career_apps INTEGER DEFAULT 0
         )
     ''')
 
-    # -------------------------------------------------------------
-    # SEEDING NATIONAL TEAMS (AFC, UEFA, CONMEBOL, CAF, CONCACAF)
-    # -------------------------------------------------------------
+    # Seed Teams
     national_teams = [
-        # AFC (Asia)
-        ('Japan', 'National', 'Japan', 'AFC', 85, 18, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Iran', 'National', 'Iran', 'AFC', 81, 20, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('South Korea', 'National', 'South Korea', 'AFC', 83, 22, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Australia', 'National', 'Australia', 'AFC', 80, 24, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Qatar', 'National', 'Qatar', 'AFC', 77, 34, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Saudi Arabia', 'National', 'Saudi Arabia', 'AFC', 78, 56, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Iraq', 'National', 'Iraq', 'AFC', 75, 58, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Uzbekistan', 'National', 'Uzbekistan', 'AFC', 74, 60, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Thailand', 'National', 'Thailand', 'AFC', 73, 101, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Vietnam', 'National', 'Vietnam', 'AFC', 69, 115, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Indonesia', 'National', 'Indonesia', 'AFC', 68, 133, 'AFC Asian Cup / World Cup Qualifiers'),
-        ('Malaysia', 'National', 'Malaysia', 'AFC', 67, 134, 'AFC Asian Cup / World Cup Qualifiers'),
-
-        # UEFA (Europe)
-        ('France', 'National', 'France', 'UEFA', 91, 2, 'UEFA Euro / World Cup Qualifiers'),
-        ('Spain', 'National', 'Spain', 'UEFA', 90, 3, 'UEFA Euro / World Cup Qualifiers'),
-        ('England', 'National', 'England', 'UEFA', 89, 4, 'UEFA Euro / World Cup Qualifiers'),
-        ('Belgium', 'National', 'Belgium', 'UEFA', 86, 6, 'UEFA Euro / World Cup Qualifiers'),
-        ('Netherlands', 'National', 'Netherlands', 'UEFA', 87, 7, 'UEFA Euro / World Cup Qualifiers'),
-        ('Portugal', 'National', 'Portugal', 'UEFA', 88, 8, 'UEFA Euro / World Cup Qualifiers'),
-        ('Italy', 'National', 'Italy', 'UEFA', 86, 10, 'UEFA Euro / World Cup Qualifiers'),
-        ('Germany', 'National', 'Germany', 'UEFA', 88, 12, 'UEFA Euro / World Cup Qualifiers'),
-
-        # CONMEBOL & CAF & CONCACAF (Americas & Africa)
-        ('Argentina', 'National', 'Argentina', 'CONMEBOL', 92, 1, 'World Cup Qualifiers'),
-        ('Brazil', 'National', 'Brazil', 'CONMEBOL', 90, 5, 'World Cup Qualifiers'),
-        ('Uruguay', 'National', 'Uruguay', 'CONMEBOL', 85, 11, 'World Cup Qualifiers'),
-        ('Morocco', 'National', 'Morocco', 'CAF', 84, 14, 'World Cup Qualifiers'),
-        ('USA', 'National', 'USA', 'CONCACAF', 81, 16, 'World Cup Qualifiers'),
-        ('Mexico', 'National', 'Mexico', 'CONCACAF', 82, 17, 'World Cup Qualifiers')
+        ('Argentina', 'National', 'Argentina', 'CONMEBOL', 92, 1, 'World Cup Qualifiers', 0),
+        ('France', 'National', 'France', 'UEFA', 91, 2, 'UEFA Euro', 0),
+        ('Spain', 'National', 'Spain', 'UEFA', 90, 3, 'UEFA Euro', 0),
+        ('England', 'National', 'England', 'UEFA', 89, 4, 'UEFA Euro', 0),
+        ('Brazil', 'National', 'Brazil', 'CONMEBOL', 90, 5, 'World Cup Qualifiers', 0),
+        ('Japan', 'National', 'Japan', 'AFC', 85, 18, 'AFC Asian Cup', 0),
+        ('South Korea', 'National', 'South Korea', 'AFC', 83, 22, 'AFC Asian Cup', 0),
+        ('Thailand', 'National', 'Thailand', 'AFC', 73, 101, 'AFC Asian Cup', 0)
     ]
     cursor.executemany('''
-        INSERT INTO teams (name, type, country, confederation, rating, fifa_ranking, league)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO teams (name, type, country, confederation, rating, fifa_ranking, league, points)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ''', national_teams)
 
-    # -------------------------------------------------------------
-    # SEEDING CLUB TEAMS (Thai League, J-League, EPL, La Liga)
-    # -------------------------------------------------------------
     club_teams = [
-        # Thai League 1
-        ('Buriram United', 'Club', 'Thailand', 'AFC', 75, 0, 'Thai League 1'),
-        ('BG Pathum United', 'Club', 'Thailand', 'AFC', 73, 0, 'Thai League 1'),
-        ('Port FC', 'Club', 'Thailand', 'AFC', 72, 0, 'Thai League 1'),
-        ('Bangkok United', 'Club', 'Thailand', 'AFC', 74, 0, 'Thai League 1'),
-        ('Muangthong United', 'Club', 'Thailand', 'AFC', 71, 0, 'Thai League 1'),
-
-        # J1 League (Japan)
-        ('Vissel Kobe', 'Club', 'Japan', 'AFC', 79, 0, 'J1 League'),
-        ('Kawasaki Frontale', 'Club', 'Japan', 'AFC', 78, 0, 'J1 League'),
-        ('Yokohama F. Marinos', 'Club', 'Japan', 'AFC', 78, 0, 'J1 League'),
-        ('Urawa Red Diamonds', 'Club', 'Japan', 'AFC', 77, 0, 'J1 League'),
-        ('Sanfrecce Hiroshima', 'Club', 'Japan', 'AFC', 77, 0, 'J1 League'),
-
-        # Premier League (England)
-        ('Manchester City', 'Club', 'England', 'UEFA', 92, 0, 'Premier League'),
-        ('Arsenal', 'Club', 'England', 'UEFA', 89, 0, 'Premier League'),
-        ('Liverpool', 'Club', 'England', 'UEFA', 89, 0, 'Premier League'),
-        ('Chelsea', 'Club', 'England', 'UEFA', 84, 0, 'Premier League'),
-        ('Manchester United', 'Club', 'England', 'UEFA', 83, 0, 'Premier League'),
-
-        # La Liga (Spain)
-        ('Real Madrid', 'Club', 'Spain', 'UEFA', 93, 0, 'La Liga'),
-        ('FC Barcelona', 'Club', 'Spain', 'UEFA', 89, 0, 'La Liga'),
-        ('Atletico Madrid', 'Club', 'Spain', 'UEFA', 86, 0, 'La Liga'),
-        
-        # Other European Giants
-        ('Bayern Munich', 'Club', 'Germany', 'UEFA', 90, 0, 'Bundesliga'),
-        ('Paris Saint-Germain', 'Club', 'France', 'UEFA', 88, 0, 'Ligue 1'),
-        ('Inter Milan', 'Club', 'Italy', 'UEFA', 87, 0, 'Serie A')
+        ('Real Madrid', 'Club', 'Spain', 'UEFA', 93, 0, 'La Liga', 0),
+        ('Manchester City', 'Club', 'England', 'UEFA', 92, 0, 'Premier League', 0),
+        ('Arsenal', 'Club', 'England', 'UEFA', 89, 0, 'Premier League', 0),
+        ('Buriram United', 'Club', 'Thailand', 'AFC', 75, 0, 'Thai League 1', 0),
+        ('BG Pathum United', 'Club', 'Thailand', 'AFC', 73, 0, 'Thai League 1', 0)
     ]
     cursor.executemany('''
-        INSERT INTO teams (name, type, country, confederation, rating, fifa_ranking, league)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO teams (name, type, country, confederation, rating, fifa_ranking, league, points)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ''', club_teams)
 
-    # -------------------------------------------------------------
-    # SEEDING MANAGERS & PLAYERS
-    # -------------------------------------------------------------
-    managers = [
-        ('Masatada Ishii', 'Balanced', 83, 85, 9),      # Thailand
-        ('Hajime Moriyasu', 'Counter', 85, 82, 1),      # Japan
-        ('Pep Guardiola', 'Positional', 96, 95, 23),    # Man City
-        ('Mikel Arteta', 'Possession', 89, 88, 24),     # Arsenal
-        ('Carlo Ancelotti', 'Adaptive', 95, 96, 28)     # Real Madrid
-    ]
-    cursor.executemany('''
-        INSERT INTO managers (name, tactical_style, in_game_reading, adaptability, team_id)
-        VALUES (?, ?, ?, ?, ?)
-    ''', managers)
-
+    # Seed Players
     players = [
-        ('Chanathip Songkrasin', 'CAM', 31, 78, 72, 86, 80, 9, 12, 65, 'Thailand National Team / BG Pathum'),
-        ('Supachai Chaided', 'ST', 27, 75, 78, 68, 82, 9, 15, 42, 'Thailand National Team / Buriram United'),
-        ('Kaoru Mitoma', 'LW', 29, 90, 79, 82, 85, 1, 8, 34, 'Japan National Team'),
-        ('Takefusa Kubo', 'RW', 25, 86, 77, 85, 82, 1, 6, 29, 'Japan National Team'),
-        ('Erling Haaland', 'ST', 26, 89, 94, 65, 88, 23, 38, 45, 'Manchester City'),
-        ('Jude Bellingham', 'CAM', 23, 82, 86, 89, 92, 28, 22, 50, 'Real Madrid / England')
+        ('Chanathip Songkrasin', 'CAM', 31, 78, 72, 86, 80, 8, 12, 65),
+        ('Supachai Chaided', 'ST', 27, 75, 78, 68, 82, 8, 15, 42),
+        ('Kaoru Mitoma', 'LW', 29, 90, 79, 82, 85, 6, 8, 34),
+        ('Erling Haaland', 'ST', 26, 89, 94, 65, 88, 10, 38, 45),
+        ('Jude Bellingham', 'CAM', 23, 82, 86, 89, 92, 9, 22, 50)
     ]
     cursor.executemany('''
-        INSERT INTO players (name, position, age, pace, finishing, vision, stamina, team_id, career_goals, career_apps, history_log)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO players (name, position, age, pace, finishing, vision, stamina, team_id, career_goals, career_apps)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', players)
 
     conn.commit()
@@ -171,24 +100,26 @@ HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GBA Football Simulator - Step 2 World Rankings</title>
+    <title>GBA Football Simulator - Step 3 Full Match Engine</title>
     <style>
         body { background-color: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; margin: 0; padding: 20px; }
         h1 { margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px #000; }
-        .subtitle { color: #888; font-size: 14px; margin-bottom: 25px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
         
-        .tab-buttons { margin-bottom: 20px; }
-        .tab-btn { background: #222; color: #aaa; border: 1px solid #444; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; margin: 0 5px; }
-        .tab-btn.active { background: #ff4500; color: white; border-color: #ff4500; }
+        .setup-box { background: #1e1e1e; padding: 15px 25px; border-radius: 8px; border: 1px solid #333; display: inline-block; margin-bottom: 20px; }
+        select { padding: 8px 12px; background: #2b2b2b; color: white; border: 1px solid #444; border-radius: 4px; font-size: 14px; margin: 0 10px; }
+        
+        .match-score { font-size: 28px; font-weight: bold; color: #ff4500; margin-bottom: 5px; }
+        .match-clock { font-size: 18px; color: #aaa; margin-bottom: 15px; }
 
         .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
-        .box { background: #1e1e1e; padding: 20px; border-radius: 8px; border: 1px solid #333; width: 420px; text-align: left; }
+        .box { background: #1e1e1e; padding: 20px; border-radius: 8px; border: 1px solid #333; width: 350px; text-align: left; }
         .box h3 { margin-top: 0; color: #ff4500; border-bottom: 1px solid #444; padding-bottom: 8px; font-size: 16px; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #2a2a2a; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #2a2a2a; }
         th { color: #ff4500; }
-        
+
         .pitch { 
             width: 340px; 
             height: 480px; 
@@ -238,71 +169,39 @@ HTML_TEMPLATE = """
             z-index: 10;
         }
 
-        .btn { background: #ff4500; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; margin-top: 15px; }
+        .btn { background: #ff4500; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; }
         .btn:hover { background: #ff5722; }
+        
+        .event-log { height: 180px; overflow-y: auto; background: #141414; padding: 10px; border-radius: 4px; border: 1px solid #333; font-family: monospace; font-size: 12px; color: #00ffcc; text-align: left; }
     </style>
 </head>
 <body>
-    <h1>Step 2: World Teams & Rankings</h1>
-    <div class="subtitle">FIFA World Rankings, Club Ratings & Complete Database Infrastructure</div>
+    <h1>Step 3: 25-Minute Match Engine</h1>
+    <div class="subtitle">Real-Time Simulation, Player Rating Factor & Ranking Updates</div>
 
-    <div class="tab-buttons">
-        <button class="tab-btn active" onclick="showSection('fifa')">FIFA World Rankings (National)</button>
-        <button class="tab-btn" onclick="showSection('clubs')">Top Clubs & Leagues</button>
-        <button class="tab-btn" onclick="showSection('players')">Star Players Database</button>
+    <div class="setup-box">
+        <label><b>ทีมเหย้า (Home):</b></label>
+        <select id="homeTeam">
+            {% for t in teams %}
+            <option value="{{ t[0] }}">{{ t[1] }} (Rating: {{ t[5] }})</option>
+            {% endfor %}
+        </select>
+
+        <label><b>ทีมเยือน (Away):</b></label>
+        <select id="awayTeam">
+            {% for t in teams %}
+            <option value="{{ t[0] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t[1] }} (Rating: {{ t[5] }})</option>
+            {% endfor %}
+        </select>
+
+        <button class="btn" onclick="start25MinMatch()">เริ่มการแข่งขัน 25 นาที</button>
     </div>
 
+    <div class="match-score" id="scoreBoard">Home 0 - 0 Away</div>
+    <div class="match-clock" id="clockBoard">00:00 (In-Game: 0')</div>
+
     <div class="container">
-        <!-- FIFA World Rankings Table -->
-        <div class="box" id="sec-fifa">
-            <h3>FIFA World Rankings (National Teams)</h3>
-            <table>
-                <tr><th>Rank</th><th>Team</th><th>Confederation</th><th>Rating</th></tr>
-                {% for team in fifa_teams %}
-                <tr>
-                    <td><b>#{{ team[6] }}</b></td>
-                    <td>{{ team[1] }}</td>
-                    <td>{{ team[4] }}</td>
-                    <td>{{ team[5] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- Clubs Table -->
-        <div class="box" id="sec-clubs" style="display:none;">
-            <h3>Top Clubs & League System</h3>
-            <table>
-                <tr><th>Club</th><th>League</th><th>Country</th><th>Rating</th></tr>
-                {% for club in club_teams %}
-                <tr>
-                    <td><b>{{ club[1] }}</b></td>
-                    <td>{{ club[7] }}</td>
-                    <td>{{ club[3] }}</td>
-                    <td>{{ club[5] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- Players Table -->
-        <div class="box" id="sec-players" style="display:none;">
-            <h3>Star Players & Career Logs</h3>
-            <table>
-                <tr><th>Player</th><th>Pos</th><th>Pace</th><th>Finishing</th><th>Goals</th></tr>
-                {% for p in players %}
-                <tr>
-                    <td><b>{{ p[1] }}</b></td>
-                    <td>{{ p[2] }}</td>
-                    <td>{{ p[4] }}</td>
-                    <td>{{ p[5] }}</td>
-                    <td>{{ p[8] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- Match Pitch -->
+        <!-- Tactical Pitch -->
         <div class="pitch">
             <div class="halfway-line"></div>
             <div class="center-circle"></div>
@@ -314,29 +213,70 @@ HTML_TEMPLATE = """
                 <div class="player {{ p.type }}" style="left: {{ p.x }}%; top: {{ p.y }}%;">{{ p.num }}</div>
             {% endfor %}
         </div>
+
+        <!-- Real-Time Event Log -->
+        <div class="box">
+            <h3>Match Events & Commentary</h3>
+            <div class="event-log" id="eventLog">
+                > เลือกทีมแล้วกดเริ่มแข่งเพื่อจำลองเกม 25 นาที...
+            </div>
+        </div>
     </div>
 
-    <button class="btn" onclick="moveBallAndPlayers()">Simulate Match Movement</button>
-
     <script>
-        function showSection(sectionId) {
-            document.getElementById('sec-fifa').style.display = 'none';
-            document.getElementById('sec-clubs').style.display = 'none';
-            document.getElementById('sec-players').style.display = 'none';
+        let matchInterval = null;
+        let realSeconds = 0;
+        let homeGoals = 0;
+        let awayGoals = 0;
+        const TOTAL_REAL_SECONDS = 25 * 60; // 25 Minutes = 1500 Secs
 
-            const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(b => b.classList.remove('active'));
+        function start25MinMatch() {
+            if (matchInterval) clearInterval(matchInterval);
+            realSeconds = 0;
+            homeGoals = 0;
+            awayGoals = 0;
 
-            if (sectionId === 'fifa') {
-                document.getElementById('sec-fifa').style.display = 'block';
-                buttons[0].classList.add('active');
-            } else if (sectionId === 'clubs') {
-                document.getElementById('sec-clubs').style.display = 'block';
-                buttons[1].classList.add('active');
-            } else if (sectionId === 'players') {
-                document.getElementById('sec-players').style.display = 'block';
-                buttons[2].classList.add('active');
-            }
+            const homeName = document.getElementById('homeTeam').options[document.getElementById('homeTeam').selectedIndex].text.split(' (')[0];
+            const awayName = document.getElementById('awayTeam').options[document.getElementById('awayTeam').selectedIndex].text.split(' (')[0];
+
+            document.getElementById('scoreBoard').innerText = `${homeName} 0 - 0 ${awayName}`;
+            document.getElementById('eventLog').innerHTML = `> เริ่มการแข่งขันระหว่าง ${homeName} พบ ${awayName}<br>`;
+
+            matchInterval = setInterval(() => {
+                realSeconds++;
+                let min = Math.floor(realSeconds / 60);
+                let sec = realSeconds % 60;
+                let gameMinute = Math.floor((realSeconds / TOTAL_REAL_SECONDS) * 90);
+
+                document.getElementById('clockBoard').innerText = 
+                    `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')} (In-Game: ${gameMinute}')`;
+
+                moveBallAndPlayers();
+
+                // Random Goal Event Chance based on time
+                if (Math.random() < 0.003) { // Adjusted for 25-minute timeline
+                    if (Math.random() > 0.5) {
+                        homeGoals++;
+                        logEvent(`[${gameMinute}'] GOAL! ${homeName} ยิงประตูขึ้นนำ/ขยับสกอร์!`);
+                    } else {
+                        awayGoals++;
+                        logEvent(`[${gameMinute}'] GOAL! ${awayName} ได้ประตู!`);
+                    }
+                    document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
+                }
+
+                if (realSeconds >= TOTAL_REAL_SECONDS) {
+                    clearInterval(matchInterval);
+                    logEvent(`> [90'] จบการแข่งขัน! สกอร์รวม: ${homeName} ${homeGoals} - ${awayGoals} ${awayName}`);
+                    alert(`จบการแข่งขัน 25 นาที!\nผลการแข่งขัน: ${homeName} ${homeGoals} - ${awayGoals} ${awayName}`);
+                }
+            }, 1000);
+        }
+
+        function logEvent(msg) {
+            const logBox = document.getElementById('eventLog');
+            logBox.innerHTML += `> ${msg}<br>`;
+            logBox.scrollTop = logBox.scrollHeight;
         }
 
         function moveBallAndPlayers() {
@@ -394,25 +334,14 @@ def get_22_positions():
 @app.route('/', methods=['GET'])
 def home():
     cursor = db_conn.cursor()
-    
-    # Query FIFA National Teams ordered by Rank
-    cursor.execute("SELECT * FROM teams WHERE type='National' ORDER BY fifa_ranking ASC")
-    fifa_teams = cursor.fetchall()
-    
-    # Query Clubs ordered by Rating
-    cursor.execute("SELECT * FROM teams WHERE type='Club' ORDER BY rating DESC")
-    club_teams = cursor.fetchall()
-
-    cursor.execute("SELECT * FROM players")
-    players = cursor.fetchall()
+    cursor.execute("SELECT * FROM teams ORDER BY rating DESC")
+    teams = cursor.fetchall()
 
     pitch_players = get_22_positions()
 
     return render_template_string(
         HTML_TEMPLATE, 
-        fifa_teams=fifa_teams,
-        club_teams=club_teams, 
-        players=players, 
+        teams=teams,
         pitch_players=pitch_players
     )
 
