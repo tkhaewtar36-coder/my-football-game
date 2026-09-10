@@ -1,0 +1,58 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<style>
+    .bracket-container { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; width: 90%; max-width: 800px; margin: 0 auto; text-align: left; }
+    .bracket-grid { display: flex; justify-content: space-between; gap: 15px; margin-top: 15px; }
+    .bracket-round { flex: 1; background: #141414; padding: 10px; border-radius: 6px; border: 1px solid #2a2a2a; }
+    .bracket-round h4 { color: #00ffcc; margin-top: 0; font-size: 13px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
+    .match-node { background: #222; border: 1px solid #444; border-radius: 4px; padding: 8px; margin-bottom: 10px; font-size: 12px; }
+    .match-node .team-line { display: flex; justify-content: space-between; margin: 2px 0; }
+    .match-node .winner { color: #00ffcc; font-weight: bold; }
+</style>
+
+<div class="header-title">
+    <h1>🌿 Knockout Tournament Bracket</h1>
+    <p>เส้นทางสู่แชมป์ตั้งแต่รอบ 8 ทีมสุดท้าย รองชนะเลิศ จนถึงรอบชิงชนะเลิศ</p>
+</div>
+
+<div class="bracket-container">
+    <div class="bracket-grid">
+        <div class="bracket-round">
+            <h4>รอบ 8 ทีมสุดท้าย</h4>
+            <div class="match-node">
+                <div class="team-line winner"><span>Argentina</span><span>2</span></div>
+                <div class="team-line"><span>Netherlands</span><span>2 (p)</span></div>
+            </div>
+            <div class="match-node">
+                <div class="team-line winner"><span>Croatia</span><span>1 (p)</span></div>
+                <div class="team-line"><span>Brazil</span><span>1</span></div>
+            </div>
+            <div class="match-node">
+                <div class="team-line winner"><span>France</span><span>2</span></div>
+                <div class="team-line"><span>England</span><span>1</span></div>
+            </div>
+        </div>
+
+        <div class="bracket-round">
+            <h4>รอบรองชนะเลิศ</h4>
+            <div class="match-node">
+                <div class="team-line winner"><span>Argentina</span><span>3</span></div>
+                <div class="team-line"><span>Croatia</span><span>0</span></div>
+            </div>
+            <div class="match-node">
+                <div class="team-line winner"><span>France</span><span>2</span></div>
+                <div class="team-line"><span>Morocco</span><span>0</span></div>
+            </div>
+        </div>
+
+        <div class="bracket-round">
+            <h4>🏆 รอบชิงชนะเลิศ</h4>
+            <div class="match-node" style="border-color: #ff4500;">
+                <div class="team-line winner"><span>🥇 Argentina</span><span>3 (p)</span></div>
+                <div class="team-line"><span>🥈 France</span><span>3</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
