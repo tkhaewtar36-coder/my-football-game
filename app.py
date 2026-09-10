@@ -205,3 +205,185 @@ def home():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+from flask import Flask, render_template_string, request
+import random
+
+app = Flask(__name__)
+
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GBA Football Tactics Simulator</title>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; padding: 20px; }
+        h1 { margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px #000; }
+        
+        .controls { margin-bottom: 20px; background: #1e1e1e; display: inline-block; padding: 15px 25px; border-radius: 8px; border: 1px solid #333; }
+        select { padding: 8px 12px; background: #2b2b2b; color: white; border: 1px solid #444; border-radius: 4px; font-size: 14px; }
+        .btn { background: #ff4500; color: white; padding: 9px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; margin-left: 10px; transition: 0.2s; }
+        .btn:hover { background: #ff5722; }
+
+        /* Tactical Pitch Design */
+        .pitch { 
+            width: 340px; 
+            height: 480px; 
+            background: repeating-linear-gradient(0deg, #2e8b57, #2e8b57 40px, #27794c 40px, #27794c 80px); 
+            margin: 0 auto; 
+            border: 4px solid #fff; 
+            position: relative; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        /* Pitch Markings */
+        .halfway-line { position: absolute; top: 50%; width: 100%; height: 2px; background: rgba(255,255,255,0.8); }
+        .center-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
+        .center-dot { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: white; border-radius: 50%; transform: translate(-50%, -50%); }
+        
+        .penalty-area-top { position: absolute; top: 0; left: 50%; width: 150px; height: 65px; border: 2px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); }
+        .goal-area-top { position: absolute; top: 0; left: 50%; width: 70px; height: 25px; border: 2px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); }
+        
+        .penalty-area-bottom { position: absolute; bottom: 0; left: 50%; width: 150px; height: 65px; border: 2px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); }
+        .goal-area-bottom { position: absolute; bottom: 0; left: 50%; width: 70px; height: 25px; border: 2px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); }
+
+        /* Player Pins with Moving Animation */
+        .player {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%);
+            border: 2px solid #fff;
+            transition: all 2s ease-in-out; /* Smooth Movement */
+        }
+        .home-team { background-color: #d32f2f; } /* Red */
+        .away-team { background-color: #1976d2; } /* Blue */
+        .gk { background-color: #fbc02d; color: black; } /* Yellow GK */
+
+        .result-box { margin-top: 20px; background: #1e1e1e; display: inline-block; padding: 15px 30px; border-radius: 8px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <h1>GBA Tactical Simulator 22 Players</h1>
+    <div class="controls">
+        <form method="POST">
+            <label>แผนทีมเรา: </label>
+            <select name="formation">
+                <option value="4-3-3" {% if formation == '4-3-3' %}selected{% endif %}>4-3-3</option>
+                <option value="4-4-2" {% if formation == '4-4-2' %}selected{% endif %}>4-4-2</option>
+                <option value="3-5-2" {% if formation == '3-5-2' %}selected{% endif %}>3-5-2</option>
+            </select>
+            <button type="submit" class="btn">จัดแผน / จำลองการแข่ง</button>
+        </form>
+    </div>
+
+    <div class="pitch">
+        <!-- Lines -->
+        <div class="halfway-line"></div>
+        <div class="center-circle"></div>
+        <div class="center-dot"></div>
+        <div class="penalty-area-top"></div>
+        <div class="goal-area-top"></div>
+        <div class="penalty-area-bottom"></div>
+        <div class="goal-area-bottom"></div>
+
+        <!-- 22 Players Position -->
+        {% for p in players %}
+            <div class="player {{ p.type }}" id="p-{{ loop.index }}" style="left: {{ p.x }}%; top: {{ p.y }}%;">{{ p.num }}</div>
+        {% endfor %}
+    </div>
+
+    {% if result %}
+        <div class="result-box">
+            <h2>{{ result }}</h2>
+            <p style="color: #aaa;">{{ details }}</p>
+        </div>
+    {% endif %}
+
+    <script>
+        // Automatic Movement Simulation Script
+        setInterval(() => {
+            const players = document.querySelectorAll('.player');
+            players.forEach(p => {
+                // Ignore Goalkeepers from moving too far
+                if (p.innerText === 'GK') return;
+
+                let currentX = parseFloat(p.style.left);
+                let currentY = parseFloat(p.style.top);
+
+                // Add random small offset (-3% to +3%)
+                let moveX = (Math.random() * 6 - 3);
+                let moveY = (Math.random() * 6 - 3);
+
+                let newX = Math.min(Math.max(currentX + moveX, 8), 92);
+                let newY = Math.min(Math.max(currentY + moveY, 8), 92);
+
+                p.style.left = newX + '%';
+                p.style.top = newY + '%';
+            });
+        }, 2000); // Move every 2 seconds
+    </script>
+</body>
+</html>
+"""
+
+def get_22_positions(formation):
+    # 11 Home Players (Red - Bottom)
+    home_players = [
+        {'num': 'GK', 'x': 50, 'y': 92, 'type': 'gk'},
+        {'num': '2', 'x': 15, 'y': 80, 'type': 'home-team'},
+        {'num': '4', 'x': 38, 'y': 82, 'type': 'home-team'},
+        {'num': '5', 'x': 62, 'y': 82, 'type': 'home-team'},
+        {'num': '3', 'x': 85, 'y': 80, 'type': 'home-team'},
+        {'num': '6', 'x': 50, 'y': 68, 'type': 'home-team'},
+        {'num': '8', 'x': 30, 'y': 60, 'type': 'home-team'},
+        {'num': '10', 'x': 70, 'y': 60, 'type': 'home-team'},
+        {'num': '7', 'x': 18, 'y': 48, 'type': 'home-team'},
+        {'num': '9', 'x': 50, 'y': 45, 'type': 'home-team'},
+        {'num': '11', 'x': 82, 'y': 48, 'type': 'home-team'},
+    ]
+
+    # 11 Away Players (Blue - Top)
+    away_players = [
+        {'num': 'GK', 'x': 50, 'y': 8, 'type': 'gk'},
+        {'num': '2', 'x': 85, 'y': 20, 'type': 'away-team'},
+        {'num': '4', 'x': 62, 'y': 18, 'type': 'away-team'},
+        {'num': '5', 'x': 38, 'y': 18, 'type': 'away-team'},
+        {'num': '3', 'x': 15, 'y': 20, 'type': 'away-team'},
+        {'num': '6', 'x': 50, 'y': 32, 'type': 'away-team'},
+        {'num': '8', 'x': 70, 'y': 40, 'type': 'away-team'},
+        {'num': '10', 'x': 30, 'y': 40, 'type': 'away-team'},
+        {'num': '7', 'x': 82, 'y': 52, 'type': 'away-team'},
+        {'num': '9', 'x': 50, 'y': 55, 'type': 'away-team'},
+        {'num': '11', 'x': 18, 'y': 52, 'type': 'away-team'},
+    ]
+
+    return home_players + away_players
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    result = None
+    details = ""
+    formation = "4-3-3"
+    
+    if request.method == 'POST':
+        formation = request.form.get('formation', '4-3-3')
+        home_score = random.randint(0, 4)
+        away_score = random.randint(0, 3)
+        result = f"ทีมคุณ ({formation}) {home_score} - {away_score} ทีมคู่แข่ง"
+        details = "จำลองการบุกและยิงประตูสำเร็จ!"
+
+    players = get_22_positions(formation)
+    return render_template_string(HTML_TEMPLATE, result=result, details=details, players=players, formation=formation)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
