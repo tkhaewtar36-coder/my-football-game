@@ -3,7 +3,6 @@ from database import get_db_connection, init_db
 
 app = Flask(__name__)
 
-# Initialize DB on start
 db_conn = get_db_connection()
 init_db(db_conn)
 
@@ -39,10 +38,15 @@ def get_22_positions():
 @app.route('/')
 def home():
     cursor = db_conn.cursor()
-    cursor.execute("SELECT * FROM teams ORDER BY type DESC, fifa_ranking ASC, rating DESC")
+    cursor.execute("SELECT * FROM teams ORDER BY rating DESC")
     teams = cursor.fetchall()
+    
+    # ดึงประวัติแชมป์ทั้งหมดเรียงตามปีล่าสุด
+    cursor.execute("SELECT * FROM trophies_history ORDER BY year DESC, id DESC")
+    trophies = cursor.fetchall()
+
     pitch_players = get_22_positions()
-    return render_template('index.html', teams=teams, pitch_players=pitch_players)
+    return render_template('index.html', teams=teams, trophies=trophies, pitch_players=pitch_players)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
