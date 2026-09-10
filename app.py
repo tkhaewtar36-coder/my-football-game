@@ -36,17 +36,30 @@ def get_22_positions():
     return home_players + away_players
 
 @app.route('/')
-def home():
+def match_center():
     cursor = db_conn.cursor()
-    cursor.execute("SELECT * FROM teams ORDER BY rating DESC")
+    cursor.execute("SELECT * FROM teams ORDER BY type DESC, rating DESC")
     teams = cursor.fetchall()
-    
-    # ดึงประวัติแชมป์ทั้งหมดเรียงตามปีล่าสุด
+    pitch_players = get_22_positions()
+    return render_template('index.html', teams=teams, pitch_players=pitch_players, active_page='match')
+
+@app.route('/worldcup')
+def world_cup_page():
+    cursor = db_conn.cursor()
+    cursor.execute("SELECT * FROM teams WHERE type='National'")
+    teams = cursor.fetchall()
+    return render_template('worldcup.html', teams=teams, active_page='worldcup')
+
+@app.route('/bracket')
+def bracket_page():
+    return render_template('bracket.html', active_page='bracket')
+
+@app.route('/history')
+def history_page():
+    cursor = db_conn.cursor()
     cursor.execute("SELECT * FROM trophies_history ORDER BY year DESC, id DESC")
     trophies = cursor.fetchall()
-
-    pitch_players = get_22_positions()
-    return render_template('index.html', teams=teams, trophies=trophies, pitch_players=pitch_players)
+    return render_template('history.html', trophies=trophies, active_page='history')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
