@@ -1,5 +1,4 @@
 import sqlite3
-import random
 
 def get_db_connection():
     conn = sqlite3.connect(":memory:", check_same_thread=False)
@@ -9,6 +8,7 @@ def get_db_connection():
 def init_db(conn):
     cursor = conn.cursor()
     
+    # 1. Teams Table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS teams (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,52 +22,56 @@ def init_db(conn):
         )
     ''')
 
-    # National Teams with Tournaments
+    # 2. Trophies History Table (ตารางบันทึกประวัติแชมป์)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS trophies_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tournament_name TEXT NOT NULL,
+            year INTEGER NOT NULL,
+            champion_team TEXT NOT NULL,
+            runner_up TEXT NOT NULL,
+            score TEXT NOT NULL
+        )
+    ''')
+
+    # Seed Teams
     national_teams = [
         ('Argentina', 'National', 'Argentina', 'CONMEBOL', 92, 1, 'FIFA World Cup'),
         ('France', 'National', 'France', 'UEFA', 91, 2, 'FIFA World Cup / UEFA Euro'),
         ('Spain', 'National', 'Spain', 'UEFA', 90, 3, 'FIFA World Cup / UEFA Euro'),
         ('England', 'National', 'England', 'UEFA', 89, 4, 'FIFA World Cup / UEFA Euro'),
-        ('Brazil', 'National', 'Brazil', 'CONMEBOL', 90, 5, 'FIFA World Cup'),
         ('Japan', 'National', 'Japan', 'AFC', 85, 18, 'FIFA World Cup / AFC Asian Cup'),
-        ('South Korea', 'National', 'South Korea', 'AFC', 83, 22, 'FIFA World Cup / AFC Asian Cup'),
-        ('Australia', 'National', 'Australia', 'AFC', 80, 24, 'FIFA World Cup / AFC Asian Cup'),
-        ('Saudi Arabia', 'National', 'Saudi Arabia', 'AFC', 78, 56, 'FIFA World Cup / AFC Asian Cup'),
-        ('Thailand', 'National', 'Thailand', 'AFC', 73, 101, 'FIFA World Cup / AFC Asian Cup'),
-        ('Vietnam', 'National', 'Vietnam', 'AFC', 69, 115, 'FIFA World Cup / AFC Asian Cup'),
-        ('Indonesia', 'National', 'Indonesia', 'AFC', 68, 133, 'FIFA World Cup / AFC Asian Cup')
+        ('Thailand', 'National', 'Thailand', 'AFC', 73, 101, 'FIFA World Cup / AFC Asian Cup')
     ]
     cursor.executemany('''
         INSERT INTO teams (name, type, country, confederation, rating, fifa_ranking, league)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', national_teams)
 
-    # Club Teams with Domestic Leagues
     club_teams = [
-        # Thai League 1
         ('Buriram United', 'Club', 'Thailand', 'AFC', 75, 0, 'Thai League 1'),
-        ('BG Pathum United', 'Club', 'Thailand', 'AFC', 73, 0, 'Thai League 1'),
-        ('Port FC', 'Club', 'Thailand', 'AFC', 72, 0, 'Thai League 1'),
-        ('Bangkok United', 'Club', 'Thailand', 'AFC', 74, 0, 'Thai League 1'),
-        
-        # J1 League
         ('Kawasaki Frontale', 'Club', 'Japan', 'AFC', 78, 0, 'J1 League'),
-        ('Yokohama F. Marinos', 'Club', 'Japan', 'AFC', 78, 0, 'J1 League'),
-        ('Vissel Kobe', 'Club', 'Japan', 'AFC', 79, 0, 'J1 League'),
-        
-        # Premier League
         ('Manchester City', 'Club', 'England', 'UEFA', 92, 0, 'Premier League'),
-        ('Arsenal', 'Club', 'England', 'UEFA', 89, 0, 'Premier League'),
-        ('Liverpool', 'Club', 'England', 'UEFA', 89, 0, 'Premier League'),
-        
-        # La Liga
-        ('Real Madrid', 'Club', 'Spain', 'UEFA', 93, 0, 'La Liga'),
-        ('FC Barcelona', 'Club', 'Spain', 'UEFA', 89, 0, 'La Liga'),
-        ('Atletico Madrid', 'Club', 'Spain', 'UEFA', 86, 0, 'La Liga')
+        ('Real Madrid', 'Club', 'Spain', 'UEFA', 93, 0, 'La Liga')
     ]
     cursor.executemany('''
         INSERT INTO teams (name, type, country, confederation, rating, fifa_ranking, league)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', club_teams)
+
+    # Seed Sample Champions History Logs (ข้อมูลประวัติแชมป์ตั้งต้น)
+    sample_history = [
+        ('FIFA World Cup', 2022, 'Argentina', 'France', '3 - 3 (p 4-2)'),
+        ('UEFA Euro', 2024, 'Spain', 'England', '2 - 1'),
+        ('AFC Asian Cup', 2023, 'Qatar', 'Jordan', '3 - 1'),
+        ('Premier League', 2024, 'Manchester City', 'Arsenal', '91 Pts'),
+        ('La Liga', 2024, 'Real Madrid', 'FC Barcelona', '95 Pts'),
+        ('Thai League 1', 2024, 'Buriram United', 'Bangkok United', '69 Pts'),
+        ('J1 League', 2023, 'Vissel Kobe', 'Yokohama F. Marinos', '71 Pts')
+    ]
+    cursor.executemany('''
+        INSERT INTO trophies_history (tournament_name, year, champion_team, runner_up, score)
+        VALUES (?, ?, ?, ?, ?)
+    ''', sample_history)
 
     conn.commit()
