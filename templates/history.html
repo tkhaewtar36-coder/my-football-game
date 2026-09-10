@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<style>
+    .history-box { width: 90%; max-width: 800px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 8px; border: 1px solid #333; text-align: left; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #2a2a2a; }
+    th { color: #ff4500; text-align: left; }
+    .champ-name { color: #00ffcc; font-weight: bold; }
+</style>
+
+<div class="header-title">
+    <h1>🏆 Champions Hall of Fame</h1>
+    <p>ทำเนียบเกียรติยศแชมป์ฟุตบอลโลก บอลทวีป และบอลลีกชั้นนำ</p>
+</div>
+
+<div class="history-box">
+    <table>
+        <tr>
+            <th>รายการ</th>
+            <th>ปี</th>
+            <th>ทีมแชมป์</th>
+            <th>รองแชมป์</th>
+            <th>สกอร์รอบชิง</th>
+        </tr>
+        {% for h in trophies %}
+        <tr>
+            <td>{{ h['tournament_name'] }}</td>
+            <td>{{ h['year'] }}</td>
+            <td class="champ-name">🥇 {{ h['champion_team'] }}</td>
+            <td>🥈 {{ h['runner_up'] }}</td>
+            <td>{{ h['score'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
