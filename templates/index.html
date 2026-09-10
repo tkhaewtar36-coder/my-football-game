@@ -24,7 +24,7 @@
 
 <div class="header-title">
     <h1>⚽ Match Center (จำลองการแข่งขัน Real-Time 25 นาที)</h1>
-    <p>เลือกทีมชาติหรือสโมสรที่ต้องการ แล้วรับชมแมตช์การแข่งขันแบบเรียลไทม์</p>
+    <p>เมื่อแข่งจบ ผลการแข่งขันจะถูกส่งไปอัปเดตตารางคะแนนในหน้ารอบคัดเลือกบอลโลกโดยอัตโนมัติ</p>
 </div>
 
 <div class="setup-box">
@@ -98,9 +98,32 @@
             if (realSeconds >= TOTAL_REAL_SECONDS) {
                 clearInterval(matchInterval);
                 logEvent(`> [90'] จบการแข่งขัน! สกอร์รวม: ${homeGoals} - ${awayGoals}`);
-                alert("จบการแข่งขัน 25 นาที!");
+                
+                // ส่งผลการแข่งขันเข้าสู่ระบบ
+                saveMatchResult(homeName, awayName, homeGoals, awayGoals);
             }
         }, 1000);
+    }
+
+    function saveMatchResult(homeName, awayName, homeGoals, awayGoals) {
+        fetch('/api/record-match', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                home_name: homeName,
+                away_name: awayName,
+                home_score: homeGoals,
+                away_score: awayGoals
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            logEvent(`> [SYSTEM] ${data.message}`);
+            alert(`จบการแข่งขัน 25 นาที!\n${data.message}`);
+        })
+        .catch(err => {
+            logEvent(`> [SYSTEM] เกิดข้อผิดพลาดในการบันทึกผลคะแนน`);
+        });
     }
 
     function logEvent(msg) {
