@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GBA Football Simulator - Full Dashboard</title>
+    <title>GBA Football Simulator - Full Management & Group Draw Engine</title>
     <style>
         body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #fff; text-shadow: 2px 2px #000; margin-bottom: 5px; }
@@ -30,7 +30,9 @@
         .home-team { background-color: #d32f2f; } .away-team { background-color: #1976d2; } .gk { background-color: #fbc02d; color: black; }
         .ball { position: absolute; width: 10px; height: 10px; background-color: #fff; border-radius: 50%; box-shadow: 0 0 6px #fff; transform: translate(-50%, -50%); transition: all 0.8s ease-out; z-index: 10; }
         
-        .btn { background: #ff4500; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn { background: #ff4500; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-draw { background: #00ffcc; color: #121212; margin-left: 10px; }
+        .btn-draw:hover { background: #00e6b8; }
         
         /* Side Box */
         .side-box { width: 360px; height: 480px; display: flex; flex-direction: column; gap: 15px; }
@@ -44,7 +46,18 @@
         th { color: #ff4500; }
         .champ-name { color: #00ffcc; font-weight: bold; }
 
-        /* Bracket Box */
+        /* Random Group Draw Component */
+        .groups-container { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; width: 720px; margin: 0 auto 30px auto; text-align: left; }
+        .groups-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .groups-header h3 { color: #ff4500; margin: 0; font-size: 16px; }
+        
+        .groups-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .group-card { flex: 1 1 calc(50% - 15px); background: #141414; padding: 12px; border-radius: 6px; border: 1px solid #2a2a2a; box-sizing: border-box; }
+        .group-card h4 { color: #00ffcc; margin-top: 0; font-size: 13px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .group-card ul { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+        .group-card li { padding: 4px 0; border-bottom: 1px dashed #222; display: flex; justify-content: space-between; }
+
+        /* Knockout Bracket */
         .bracket-container { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; width: 720px; margin: 0 auto; text-align: left; }
         .bracket-title { color: #ff4500; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 10px; font-size: 16px; }
         .bracket-grid { display: flex; justify-content: space-between; gap: 15px; margin-top: 15px; }
@@ -57,7 +70,7 @@
 </head>
 <body>
     <h1>GBA Football Simulator</h1>
-    <div class="subtitle">ระบบจำลองการแข่งขัน บอลโลก บอลทวีป บอลลีก ทำเนียบแชมป์ และสายการแข่งขัน</div>
+    <div class="subtitle">ระบบจำลองการแข่งขัน สุ่มจับกลุ่มแบ่งสาย บอลโลก บอลทวีป บอลลีก และทำเนียบแชมป์</div>
 
     <div class="tourney-nav">
         <button class="nav-btn active" onclick="filterCategory('ALL', event)">🏆 ทั้งหมด</button>
@@ -136,6 +149,18 @@
         </div>
     </div>
 
+    <!-- Random Group Stage Draw Section -->
+    <div class="groups-container">
+        <div class="groups-header">
+            <h3>🎲 ผลการสุ่มจับกลุ่มการแข่งขัน (Tournament Group Stage Draw)</h3>
+            <button class="btn btn-draw" onclick="randomizeGroups()">🎲 สุ่มจับกลุ่มใหม่ (Random Draw)</button>
+        </div>
+
+        <div class="groups-grid" id="groupsDisplay">
+            <!-- Dynamic Group Cards will render here -->
+        </div>
+    </div>
+
     <!-- Knockout Bracket -->
     <div class="bracket-container">
         <h3 class="bracket-title">🌿 เส้นทางการแข่งขันชิงถ้วย (Knockout Bracket Path)</h3>
@@ -178,6 +203,11 @@
         let matchInterval = null, realSeconds = 0, homeGoals = 0, awayGoals = 0;
         const TOTAL_REAL_SECONDS = 25 * 60;
 
+        // Initial Load
+        window.onload = function() {
+            randomizeGroups();
+        };
+
         function filterCategory(cat, evt) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if(evt) evt.target.classList.add('active');
@@ -199,6 +229,50 @@
 
             for (let opt of homeSelect.options) { if (opt.style.display !== 'none') { homeSelect.value = opt.value; break; } }
             for (let opt of awaySelect.options) { if (opt.style.display !== 'none' && opt.value !== homeSelect.value) { awaySelect.value = opt.value; break; } }
+
+            randomizeGroups();
+        }
+
+        function randomizeGroups() {
+            const homeSelect = document.getElementById('homeTeam');
+            let visibleTeams = [];
+
+            Array.from(homeSelect.options).forEach(opt => {
+                if (opt.style.display !== 'none') {
+                    visibleTeams.push(opt.text.split(' (')[0]);
+                }
+            });
+
+            // Shuffle Teams
+            for (let i = visibleTeams.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [visibleTeams[i], visibleTeams[j]] = [visibleTeams[j], visibleTeams[i]];
+            }
+
+            const groupNames = ['Group A', 'Group B', 'Group C', 'Group D'];
+            const groupsDisplay = document.getElementById('groupsDisplay');
+            groupsDisplay.innerHTML = '';
+
+            let teamIndex = 0;
+            groupNames.forEach((group, idx) => {
+                let groupTeams = visibleTeams.slice(teamIndex, teamIndex + 3);
+                teamIndex += 3;
+
+                if (groupTeams.length > 0) {
+                    let cardHTML = `
+                        <div class="group-card">
+                            <h4>📌 ${group}</h4>
+                            <ul>
+                    `;
+
+                    groupTeams.forEach((t, i) => {
+                        cardHTML += `<li><span>${i+1}. ${t}</span><span style="color:#888;">Pts: 0</span></li>`;
+                    });
+
+                    cardHTML += `</ul></div>`;
+                    groupsDisplay.innerHTML += cardHTML;
+                }
+            });
         }
 
         function start25MinMatch() {
