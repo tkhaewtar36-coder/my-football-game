@@ -1,4 +1,314 @@
-<!DOCTYPE html>
+<!DOCTYPE<!DOCTYPE html>
+<html>
+<head>
+    <title>GBA Football Simulator - World Cup 32 Qualifiers Engine</title>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { color: #fff; text-shadow: 2px 2px #000; margin-bottom: 5px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+
+        .tourney-nav { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .nav-btn { background: #1e1e1e; color: #aaa; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; }
+        .nav-btn:hover, .nav-btn.active { background: #ff4500; color: #fff; border-color: #ff4500; }
+
+        .setup-box { background: #1e1e1e; padding: 15px; border-radius: 8px; display: inline-block; margin-bottom: 20px; border: 1px solid #333; }
+        select { padding: 8px; background: #2b2b2b; color: #fff; border: 1px solid #444; border-radius: 4px; margin: 0 10px; max-width: 220px; }
+        
+        .match-score { font-size: 28px; font-weight: bold; color: #ff4500; }
+        .match-clock { font-size: 18px; color: #aaa; margin-bottom: 15px; }
+
+        .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 25px; }
+        
+        /* Pitch */
+        .pitch { width: 340px; height: 480px; background: repeating-linear-gradient(0deg, #2e8b57, #2e8b57 40px, #27794c 40px, #27794c 80px); border: 4px solid #fff; position: relative; border-radius: 4px; overflow: hidden; }
+        .halfway-line { position: absolute; top: 50%; width: 100%; height: 2px; background: rgba(255,255,255,0.8); }
+        .center-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
+        .penalty-area-top { position: absolute; top: 0; left: 50%; width: 150px; height: 65px; border: 2px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); }
+        .penalty-area-bottom { position: absolute; bottom: 0; left: 50%; width: 150px; height: 65px; border: 2px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); }
+        
+        .player { position: absolute; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: white; transform: translate(-50%, -50%); border: 2px solid #fff; transition: all 1.5s ease-in-out; }
+        .home-team { background-color: #d32f2f; } .away-team { background-color: #1976d2; } .gk { background-color: #fbc02d; color: black; }
+        .ball { position: absolute; width: 10px; height: 10px; background-color: #fff; border-radius: 50%; box-shadow: 0 0 6px #fff; transform: translate(-50%, -50%); transition: all 0.8s ease-out; z-index: 10; }
+        
+        .btn { background: #ff4500; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-draw { background: #00ffcc; color: #121212; margin-left: 10px; }
+        .btn-draw:hover { background: #00e6b8; }
+        .btn-qualifier { background: #ffb703; color: #121212; margin-left: 10px; }
+        
+        /* Side Box */
+        .side-box { width: 360px; height: 480px; display: flex; flex-direction: column; gap: 15px; }
+        .box-panel { background: #1e1e1e; padding: 12px; border-radius: 8px; border: 1px solid #333; text-align: left; overflow-y: auto; }
+        .box-panel h3 { color: #ff4500; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 6px; font-size: 14px; }
+        
+        .event-log { height: 160px; font-family: monospace; font-size: 12px; color: #00ffcc; overflow-y: auto; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th, td { padding: 4px 6px; border-bottom: 1px solid #2a2a2a; }
+        th { color: #ff4500; }
+        .champ-name { color: #00ffcc; font-weight: bold; }
+
+        /* Group Stage Grid */
+        .groups-container { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; width: 850px; margin: 0 auto 30px auto; text-align: left; }
+        .groups-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .groups-header h3 { color: #ff4500; margin: 0; font-size: 16px; }
+        
+        .groups-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .group-card { flex: 1 1 calc(25% - 15px); background: #141414; padding: 12px; border-radius: 6px; border: 1px solid #2a2a2a; box-sizing: border-box; min-width: 190px; }
+        .group-card h4 { color: #00ffcc; margin-top: 0; font-size: 13px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .group-card ul { list-style: none; padding: 0; margin: 0; font-size: 11px; }
+        .group-card li { padding: 4px 0; border-bottom: 1px dashed #222; display: flex; justify-content: space-between; }
+        .conf-badge { font-size: 9px; padding: 1px 4px; border-radius: 3px; background: #333; color: #ffb703; }
+    </style>
+</head>
+<body>
+    <h1>GBA Football Simulator</h1>
+    <div class="subtitle">ระบบจำลองคัดเลือกบอลโลกตามทวีป (32 โควตา) และการจำลองแข่งขัน 25 นาที</div>
+
+    <div class="tourney-nav">
+        <button class="nav-btn active" onclick="filterCategory('ALL', event)">🏆 ทั้งหมด</button>
+        <button class="nav-btn" onclick="filterCategory('FIFA World Cup', event)">🌍 FIFA World Cup</button>
+        <button class="nav-btn" onclick="filterCategory('AFC Asian Cup', event)">🌏 AFC Asian Cup</button>
+        <button class="nav-btn" onclick="filterCategory('UEFA Euro', event)">🇪🇺 UEFA Euro</button>
+        <button class="nav-btn" onclick="filterCategory('Thai League 1', event)">🇹🇭 Thai League 1</button>
+        <button class="nav-btn" onclick="filterCategory('J1 League', event)">🇯🇵 J1 League</button>
+        <button class="nav-btn" onclick="filterCategory('Premier League', event)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+    </div>
+
+    <div class="setup-box">
+        <label><b>ทีมเหย้า:</b></label>
+        <select id="homeTeam">
+            {% for t in teams %}
+            <option value="{{ t['id'] }}" data-league="{{ t['league'] }}" data-conf="{{ t['confederation'] }}">{{ t['name'] }} ({{ t['league'] }})</option>
+            {% endfor %}
+        </select>
+
+        <label><b>ทีมเยือน:</b></label>
+        <select id="awayTeam">
+            {% for t in teams %}
+            <option value="{{ t['id'] }}" data-league="{{ t['league'] }}" data-conf="{{ t['confederation'] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t['name'] }} ({{ t['league'] }})</option>
+            {% endfor %}
+        </select>
+
+        <button class="btn" onclick="start25MinMatch()">เริ่มแข่ง 25 นาที</button>
+    </div>
+
+    <div class="match-score" id="scoreBoard">Home 0 - 0 Away</div>
+    <div class="match-clock" id="clockBoard">00:00 (In-Game: 0')</div>
+
+    <div class="container">
+        <!-- Pitch -->
+        <div class="pitch">
+            <div class="halfway-line"></div>
+            <div class="center-circle"></div>
+            <div class="penalty-area-top"></div>
+            <div class="penalty-area-bottom"></div>
+            <div class="ball" id="ball" style="left: 50%; top: 50%;"></div>
+
+            {% for p in pitch_players %}
+                <div class="player {{ p.type }}" style="left: {{ p.x }}%; top: {{ p.y }}%;">{{ p.num }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="side-box">
+            <!-- Commentary -->
+            <div class="box-panel" style="height: 200px;">
+                <h3>🎙️ Match Commentary</h3>
+                <div class="event-log" id="eventLog">
+                    > เลือกคู่แข่งขันและกดเริ่มแข่ง หรือสุ่มรอบคัดเลือกบอลโลก 32 ทีม...
+                </div>
+            </div>
+
+            <!-- Hall of Fame -->
+            <div class="box-panel" style="height: 250px;">
+                <h3>🏆 Champions Hall of Fame (ประวัติแชมป์)</h3>
+                <table>
+                    <tr>
+                        <th>รายการ</th>
+                        <th>ปี</th>
+                        <th>แชมป์</th>
+                        <th>สกอร์</th>
+                    </tr>
+                    {% for h in trophies %}
+                    <tr>
+                        <td>{{ h['tournament_name'] }}</td>
+                        <td>{{ h['year'] }}</td>
+                        <td class="champ-name">🥇 {{ h['champion_team'] }}</td>
+                        <td>{{ h['score'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- World Cup 32 Qualifiers & Group Draw Section -->
+    <div class="groups-container">
+        <div class="groups-header">
+            <h3>🌍 ฟุตบอลโลก รอบสุดท้าย 32 ทีม (World Cup 32 Qualifiers & Groups)</h3>
+            <div>
+                <button class="btn btn-qualifier" onclick="runQualifiersAndDraw()">🌍 จำลองรอบคัดเลือกทวีป (Qualifiers)</button>
+                <button class="btn btn-draw" onclick="randomizeGroups()">🎲 สุ่มจับกลุ่ม (Draw Groups)</button>
+            </div>
+        </div>
+
+        <div class="groups-grid" id="groupsDisplay">
+            <!-- Render 8 Groups (Group A - H) for 32 Teams -->
+        </div>
+    </div>
+
+    <script>
+        let matchInterval = null, realSeconds = 0, homeGoals = 0, awayGoals = 0;
+        const TOTAL_REAL_SECONDS = 25 * 60;
+
+        const allNationalTeams = [
+            {% for t in teams %}
+            {% if t['type'] == 'National' %}
+            { name: "{{ t['name'] }}", conf: "{{ t['confederation'] }}", rating: {{ t['rating'] }} },
+            {% endif %}
+            {% endfor %}
+        ];
+
+        window.onload = function() {
+            runQualifiersAndDraw();
+        };
+
+        function runQualifiersAndDraw() {
+            // Quota per confederation for 32 teams:
+            // AFC: 6, CAF: 4, CONMEBOL: 5, CONCACAF: 3, UEFA: 13, OFC: 1
+            const quotas = { 'AFC': 6, 'CAF': 4, 'CONMEBOL': 5, 'CONCACAF': 3, 'UEFA': 13, 'OFC': 1 };
+            let qualified32 = [];
+
+            const logBox = document.getElementById('eventLog');
+            logBox.innerHTML = `> 🌍 เริ่มการจำลองฟุตบอลโลกรอบคัดเลือกแยกตามทวีป...<br>`;
+
+            for (let conf in quotas) {
+                let confTeams = allNationalTeams.filter(t => t.conf === conf);
+                // Sort by Rating + Random factor
+                confTeams.sort((a, b) => (b.rating + Math.random() * 10) - (a.rating + Math.random() * 10));
+                
+                let selected = confTeams.slice(0, quotas[conf]);
+                qualified32.push(...selected);
+
+                logBox.innerHTML += `> โซน ${conf}: ผ่านเข้ารอบ ${selected.length}/${quotas[conf]} ทีม<br>`;
+            }
+
+            logBox.scrollTop = logBox.scrollHeight;
+
+            // Shuffle Qualified 32 Teams into Groups A - H
+            for (let i = qualified32.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [qualified32[i], qualified32[j]] = [qualified32[j], qualified32[i]];
+            }
+
+            render32Groups(qualified32);
+        }
+
+        function render32Groups(qualifiedList) {
+            const groupNames = ['Group A', 'Group B', 'Group C', 'Group D', 'Group E', 'Group F', 'Group G', 'Group H'];
+            const groupsDisplay = document.getElementById('groupsDisplay');
+            groupsDisplay.innerHTML = '';
+
+            let teamIdx = 0;
+            groupNames.forEach(gName => {
+                let gTeams = qualifiedList.slice(teamIdx, teamIdx + 4);
+                teamIdx += 4;
+
+                let cardHTML = `
+                    <div class="group-card">
+                        <h4>📌 ${gName}</h4>
+                        <ul>
+                `;
+
+                gTeams.forEach((t, idx) => {
+                    cardHTML += `<li><span>${idx+1}. ${t.name}</span> <span class="conf-badge">${t.conf}</span></li>`;
+                });
+
+                cardHTML += `</ul></div>`;
+                groupsDisplay.innerHTML += cardHTML;
+            });
+        }
+
+        function randomizeGroups() {
+            runQualifiersAndDraw();
+        }
+
+        function filterCategory(cat, evt) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if(evt) evt.target.classList.add('active');
+
+            const homeSelect = document.getElementById('homeTeam');
+            const awaySelect = document.getElementById('awayTeam');
+
+            Array.from(homeSelect.options).forEach(opt => {
+                const league = opt.getAttribute('data-league') || '';
+                if (cat === 'ALL' || league.includes(cat)) { opt.style.display = 'block'; } 
+                else { opt.style.display = 'none'; }
+            });
+
+            Array.from(awaySelect.options).forEach(opt => {
+                const league = opt.getAttribute('data-league') || '';
+                if (cat === 'ALL' || league.includes(cat)) { opt.style.display = 'block'; } 
+                else { opt.style.display = 'none'; }
+            });
+
+            for (let opt of homeSelect.options) { if (opt.style.display !== 'none') { homeSelect.value = opt.value; break; } }
+            for (let opt of awaySelect.options) { if (opt.style.display !== 'none' && opt.value !== homeSelect.value) { awaySelect.value = opt.value; break; } }
+        }
+
+        function start25MinMatch() {
+            if (matchInterval) clearInterval(matchInterval);
+            realSeconds = 0; homeGoals = 0; awayGoals = 0;
+
+            const homeName = document.getElementById('homeTeam').options[document.getElementById('homeTeam').selectedIndex].text.split(' (')[0];
+            const awayName = document.getElementById('awayTeam').options[document.getElementById('awayTeam').selectedIndex].text.split(' (')[0];
+
+            document.getElementById('scoreBoard').innerText = `${homeName} 0 - 0 ${awayName}`;
+            document.getElementById('eventLog').innerHTML = `> เริ่มการแข่งขันระหว่าง ${homeName} พบ ${awayName}<br>`;
+
+            matchInterval = setInterval(() => {
+                realSeconds++;
+                let min = Math.floor(realSeconds / 60), sec = realSeconds % 60;
+                let gameMinute = Math.floor((realSeconds / TOTAL_REAL_SECONDS) * 90);
+
+                document.getElementById('clockBoard').innerText = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')} (In-Game: ${gameMinute}')`;
+
+                moveBallAndPlayers();
+
+                if (Math.random() < 0.003) {
+                    if (Math.random() > 0.5) { homeGoals++; logEvent(`[${gameMinute}'] GOAL! ${homeName} ยิงประตูได้!`); }
+                    else { awayGoals++; logEvent(`[${gameMinute}'] GOAL! ${awayName} ได้ประตู!`); }
+                    document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
+                }
+
+                if (realSeconds >= TOTAL_REAL_SECONDS) {
+                    clearInterval(matchInterval);
+                    logEvent(`> [90'] จบการแข่งขัน! สกอร์รวม: ${homeGoals} - ${awayGoals}`);
+                    alert("จบการแข่งขัน 25 นาที!");
+                }
+            }, 1000);
+        }
+
+        function logEvent(msg) {
+            const logBox = document.getElementById('eventLog');
+            logBox.innerHTML += `> ${msg}<br>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function moveBallAndPlayers() {
+            let ball = document.getElementById('ball');
+            ball.style.left = Math.min(Math.max(Math.random() * 80 + 10, 10), 90) + '%';
+            ball.style.top = Math.min(Math.max(Math.random() * 80 + 10, 10), 90) + '%';
+
+            document.querySelectorAll('.player').forEach(p => {
+                if (p.innerText === 'GK') return;
+                let cX = parseFloat(p.style.left), cY = parseFloat(p.style.top);
+                p.style.left = Math.min(Math.max(cX + (Math.random() * 8 - 4), 8), 92) + '%';
+                p.style.top = Math.min(Math.max(cY + (Math.random() * 8 - 4), 8), 92) + '%';
+            });
+        }
+    </script>
+</body>
+</html> html>
 <html>
 <head>
     <title>GBA Football Simulator - Full Management & Group Draw Engine</title>
