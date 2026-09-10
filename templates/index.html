@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GBA Football Simulator - Tournament Bracket Path</title>
+    <title>GBA Football Simulator - Full Dashboard</title>
     <style>
         body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #fff; text-shadow: 2px 2px #000; margin-bottom: 5px; }
@@ -19,7 +19,7 @@
 
         .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 25px; }
         
-        /* Tactical Pitch */
+        /* Pitch */
         .pitch { width: 340px; height: 480px; background: repeating-linear-gradient(0deg, #2e8b57, #2e8b57 40px, #27794c 40px, #27794c 80px); border: 4px solid #fff; position: relative; border-radius: 4px; overflow: hidden; }
         .halfway-line { position: absolute; top: 50%; width: 100%; height: 2px; background: rgba(255,255,255,0.8); }
         .center-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
@@ -32,17 +32,24 @@
         
         .btn { background: #ff4500; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         
-        .side-box { width: 340px; height: 480px; display: flex; flex-direction: column; gap: 15px; }
+        /* Side Box */
+        .side-box { width: 360px; height: 480px; display: flex; flex-direction: column; gap: 15px; }
         .box-panel { background: #1e1e1e; padding: 12px; border-radius: 8px; border: 1px solid #333; text-align: left; overflow-y: auto; }
         .box-panel h3 { color: #ff4500; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 6px; font-size: 14px; }
-        .event-log { height: 180px; font-family: monospace; font-size: 12px; color: #00ffcc; }
+        
+        .event-log { height: 160px; font-family: monospace; font-size: 12px; color: #00ffcc; overflow-y: auto; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th, td { padding: 4px 6px; border-bottom: 1px solid #2a2a2a; }
+        th { color: #ff4500; }
+        .champ-name { color: #00ffcc; font-weight: bold; }
 
-        /* Tournament Bracket View */
-        .bracket-container { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; width: 700px; margin: 0 auto; text-align: left; }
-        .bracket-title { color: #ff4500; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 10px; font-size: 18px; }
+        /* Bracket Box */
+        .bracket-container { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; width: 720px; margin: 0 auto; text-align: left; }
+        .bracket-title { color: #ff4500; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 10px; font-size: 16px; }
         .bracket-grid { display: flex; justify-content: space-between; gap: 15px; margin-top: 15px; }
         .bracket-round { flex: 1; background: #141414; padding: 10px; border-radius: 6px; border: 1px solid #2a2a2a; }
-        .bracket-round h4 { color: #00ffcc; margin-top: 0; font-size: 13px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .bracket-round h4 { color: #00ffcc; margin-top: 0; font-size: 12px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .match-node { background: #222; border: 1px solid #444; border-radius: 4px; padding: 6px 8px; margin-bottom: 8px; font-size: 11px; }
         .match-node .team-line { display: flex; justify-content: space-between; margin: 2px 0; }
         .match-node .winner { color: #00ffcc; font-weight: bold; }
@@ -50,16 +57,16 @@
 </head>
 <body>
     <h1>GBA Football Simulator</h1>
-    <div class="subtitle">เส้นทางการแข่งขัน (Tournament Bracket Path) สู่รอบชิงชนะเลิศ</div>
+    <div class="subtitle">ระบบจำลองการแข่งขัน บอลโลก บอลทวีป บอลลีก ทำเนียบแชมป์ และสายการแข่งขัน</div>
 
     <div class="tourney-nav">
-        <button class="nav-btn active" onclick="filterCategory('ALL')">🏆 ทั้งหมด</button>
-        <button class="nav-btn" onclick="filterCategory('FIFA World Cup')">🌍 FIFA World Cup</button>
-        <button class="nav-btn" onclick="filterCategory('AFC Asian Cup')">🌏 AFC Asian Cup</button>
-        <button class="nav-btn" onclick="filterCategory('UEFA Euro')">🇪🇺 UEFA Euro</button>
-        <button class="nav-btn" onclick="filterCategory('Thai League 1')">🇹🇭 Thai League 1</button>
-        <button class="nav-btn" onclick="filterCategory('J1 League')">🇯🇵 J1 League</button>
-        <button class="nav-btn" onclick="filterCategory('Premier League')">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+        <button class="nav-btn active" onclick="filterCategory('ALL', event)">🏆 ทั้งหมด</button>
+        <button class="nav-btn" onclick="filterCategory('FIFA World Cup', event)">🌍 FIFA World Cup</button>
+        <button class="nav-btn" onclick="filterCategory('AFC Asian Cup', event)">🌏 AFC Asian Cup</button>
+        <button class="nav-btn" onclick="filterCategory('UEFA Euro', event)">🇪🇺 UEFA Euro</button>
+        <button class="nav-btn" onclick="filterCategory('Thai League 1', event)">🇹🇭 Thai League 1</button>
+        <button class="nav-btn" onclick="filterCategory('J1 League', event)">🇯🇵 J1 League</button>
+        <button class="nav-btn" onclick="filterCategory('Premier League', event)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
     </div>
 
     <div class="setup-box">
@@ -98,20 +105,41 @@
         </div>
 
         <div class="side-box">
-            <div class="box-panel" style="height: 450px;">
+            <!-- Commentary -->
+            <div class="box-panel" style="height: 200px;">
                 <h3>🎙️ Match Commentary</h3>
                 <div class="event-log" id="eventLog">
-                    > เลือกรายการแข่งแล้วกดเริ่มจำลองแมตช์ 25 นาที...
+                    > เลือกรายการแข่งและคู่แข่งขันด้านบนเพื่อเริ่มการแข่งขัน...
                 </div>
+            </div>
+
+            <!-- Hall of Fame -->
+            <div class="box-panel" style="height: 250px;">
+                <h3>🏆 Champions Hall of Fame (ประวัติแชมป์)</h3>
+                <table>
+                    <tr>
+                        <th>รายการ</th>
+                        <th>ปี</th>
+                        <th>แชมป์</th>
+                        <th>สกอร์</th>
+                    </tr>
+                    {% for h in trophies %}
+                    <tr>
+                        <td>{{ h['tournament_name'] }}</td>
+                        <td>{{ h['year'] }}</td>
+                        <td class="champ-name">🥇 {{ h['champion_team'] }}</td>
+                        <td>{{ h['score'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Tournament Bracket Component -->
+    <!-- Knockout Bracket -->
     <div class="bracket-container">
         <h3 class="bracket-title">🌿 เส้นทางการแข่งขันชิงถ้วย (Knockout Bracket Path)</h3>
         <div class="bracket-grid">
-            <!-- Round of 8 -->
             <div class="bracket-round">
                 <h4>รอบ 8 ทีมสุดท้าย</h4>
                 <div class="match-node">
@@ -122,17 +150,8 @@
                     <div class="team-line winner"><span>Croatia</span><span>1 (p)</span></div>
                     <div class="team-line"><span>Brazil</span><span>1</span></div>
                 </div>
-                <div class="match-node">
-                    <div class="team-line winner"><span>France</span><span>2</span></div>
-                    <div class="team-line"><span>England</span><span>1</span></div>
-                </div>
-                <div class="match-node">
-                    <div class="team-line winner"><span>Morocco</span><span>1</span></div>
-                    <div class="team-line"><span>Portugal</span><span>0</span></div>
-                </div>
             </div>
 
-            <!-- Semi Finals -->
             <div class="bracket-round">
                 <h4>รอบรองชนะเลิศ</h4>
                 <div class="match-node">
@@ -145,7 +164,6 @@
                 </div>
             </div>
 
-            <!-- Final -->
             <div class="bracket-round">
                 <h4>🏆 รอบชิงชนะเลิศ</h4>
                 <div class="match-node" style="border-color: #ff4500;">
@@ -160,21 +178,21 @@
         let matchInterval = null, realSeconds = 0, homeGoals = 0, awayGoals = 0;
         const TOTAL_REAL_SECONDS = 25 * 60;
 
-        function filterCategory(cat) {
+        function filterCategory(cat, evt) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            if(evt) evt.target.classList.add('active');
 
             const homeSelect = document.getElementById('homeTeam');
             const awaySelect = document.getElementById('awayTeam');
 
             Array.from(homeSelect.options).forEach(opt => {
-                const league = opt.getAttribute('data-league');
+                const league = opt.getAttribute('data-league') || '';
                 if (cat === 'ALL' || league.includes(cat)) { opt.style.display = 'block'; } 
                 else { opt.style.display = 'none'; }
             });
 
             Array.from(awaySelect.options).forEach(opt => {
-                const league = opt.getAttribute('data-league');
+                const league = opt.getAttribute('data-league') || '';
                 if (cat === 'ALL' || league.includes(cat)) { opt.style.display = 'block'; } 
                 else { opt.style.display = 'none'; }
             });
