@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GBA Football Simulator</title>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 0; margin: 0; }
+        
+        /* Main Navigation Bar Header */
+        .top-navbar { background: #1e1e1e; border-bottom: 2px solid #ff4500; display: flex; justify-content: center; gap: 15px; padding: 12px 20px; margin-bottom: 25px; }
+        .top-navbar a { color: #aaa; text-decoration: none; font-weight: bold; font-size: 14px; padding: 8px 18px; border-radius: 20px; transition: 0.2s; }
+        .top-navbar a:hover, .top-navbar a.active { background: #ff4500; color: #fff; }
+
+        .header-title { margin-bottom: 20px; }
+        .header-title h1 { margin: 0 0 5px 0; font-size: 26px; }
+        .header-title p { margin: 0; color: #888; font-size: 13px; }
+        
+        .main-content { padding: 0 20px 40px 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- Shared Navigation Bar -->
+    <div class="top-navbar">
+        <a href="/" class="{% if active_page == 'match' %}active{% endif %}">⚽ สนามแข่ง (Match Center)</a>
+        <a href="/worldcup" class="{% if active_page == 'worldcup' %}active{% endif %}">🌍 รอบคัดเลือกบอลโลก 32 ทีม</a>
+        <a href="/bracket" class="{% if active_page == 'bracket' %}active{% endif %}">🌿 สายการแข่งขัน (Brackets)</a>
+        <a href="/history" class="{% if active_page == 'history' %}active{% endif %}">🏆 ทำเนียบแชมป์ (Hall of Fame)</a>
+    </div>
+
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+</html>
