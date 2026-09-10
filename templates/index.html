@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GBA Football Simulator - Modular Edition</title>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; }
+        h1 { color: #fff; text-shadow: 2px 2px #000; }
+        .setup-box { background: #1e1e1e; padding: 15px; border-radius: 8px; display: inline-block; margin-bottom: 20px; border: 1px solid #333; }
+        select { padding: 8px; background: #2b2b2b; color: #fff; border: 1px solid #444; border-radius: 4px; margin: 0 10px; }
+        .match-score { font-size: 28px; font-weight: bold; color: #ff4500; }
+        .match-clock { font-size: 18px; color: #aaa; margin-bottom: 15px; }
+        .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .pitch { width: 340px; height: 480px; background: repeating-linear-gradient(0deg, #2e8b57, #2e8b57 40px, #27794c 40px, #27794c 80px); border: 4px solid #fff; position: relative; border-radius: 4px; overflow: hidden; }
+        .halfway-line { position: absolute; top: 50%; width: 100%; height: 2px; background: rgba(255,255,255,0.8); }
+        .center-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
+        .penalty-area-top { position: absolute; top: 0; left: 50%; width: 150px; height: 65px; border: 2px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); }
+        .penalty-area-bottom { position: absolute; bottom: 0; left: 50%; width: 150px; height: 65px; border: 2px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); }
+        .player { position: absolute; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: white; transform: translate(-50%, -50%); border: 2px solid #fff; transition: all 1.5s ease-in-out; }
+        .home-team { background-color: #d32f2f; } .away-team { background-color: #1976d2; } .gk { background-color: #fbc02d; color: black; }
+        .ball { position: absolute; width: 10px; height: 10px; background-color: #fff; border-radius: 50%; box-shadow: 0 0 6px #fff; transform: translate(-50%, -50%); transition: all 0.8s ease-out; z-index: 10; }
+        .btn { background: #ff4500; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .event-log { width: 340px; height: 460px; overflow-y: auto; background: #141414; padding: 10px; border-radius: 4px; border: 1px solid #333; font-family: monospace; font-size: 12px; color: #00ffcc; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>GBA Football Simulator (Separated Code Structure)</h1>
+
+    <div class="setup-box">
+        <label><b>ทีมเหย้า:</b></label>
+        <select id="homeTeam">
+            {% for t in teams %}
+            <option value="{{ t['id'] }}">{{ t['name'] }} ({% if t['type']=='National' %}#{{ t['fifa_ranking'] }}{% else %}{{ t['league'] }}{% endif %})</option>
+            {% endfor %}
+        </select>
+
+        <label><b>ทีมเยือน:</b></label>
+        <select id="awayTeam">
+            {% for t in teams %}
+            <option value="{{ t['id'] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t['name'] }} ({% if t['type']=='National' %}#{{ t['fifa_ranking'] }}{% else %}{{ t['league'] }}{% endif %})</option>
+            {% endfor %}
+        </select>
+
+        <button class="btn" onclick="start25MinMatch()">เริ่มแข่ง 25 นาที</button>
+    </div>
+
+    <div class="match-score" id="scoreBoard">Home 0 - 0 Away</div>
+    <div class="match-clock" id="clockBoard">00:00 (In-Game: 0')</div>
+
+    <div class="container">
+        <div class="pitch">
+            <div class="halfway-line"></div>
+            <div class="center-circle"></div>
+            <div class="penalty-area-top"></div>
+            <div class="penalty-area-bottom"></div>
+            <div class="ball" id="ball" style="left: 50%; top: 50%;"></div>
+
+            {% for p in pitch_players %}
+                <div class="player {{ p.type }}" style="left: {{ p.x }}%; top: {{ p.y }}%;">{{ p.num }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="event-log" id="eventLog">
+            > โครงสร้างไฟล์ถูกแยกเรียบร้อยแล้ว (app.py + database.py + index.html)<br>
+            > เลือกทีมและกดเริ่มแข่งขัน 25 นาทีได้ทันที!
+        </div>
+    </div>
+
+    <script>
+        let matchInterval = null, realSeconds = 0, homeGoals = 0, awayGoals = 0;
+        const TOTAL_REAL_SECONDS = 25 * 60;
+
+        function start25MinMatch() {
+            if (matchInterval) clearInterval(matchInterval);
+            realSeconds = 0; homeGoals = 0; awayGoals = 0;
+
+            const homeName = document.getElementById('homeTeam').options[document.getElementById('homeTeam').selectedIndex].text.split(' (')[0];
+            const awayName = document.getElementById('awayTeam').options[document.getElementById('awayTeam').selectedIndex].text.split(' (')[0];
+
+            document.getElementById('scoreBoard').innerText = `${homeName} 0 - 0 ${awayName}`;
+            document.getElementById('eventLog').innerHTML = `> เริ่มการแข่งขันระหว่าง ${homeName} พบ ${awayName}<br>`;
+
+            matchInterval = setInterval(() => {
+                realSeconds++;
+                let min = Math.floor(realSeconds / 60), sec = realSeconds % 60;
+                let gameMinute = Math.floor((realSeconds / TOTAL_REAL_SECONDS) * 90);
+
+                document.getElementById('clockBoard').innerText = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')} (In-Game: ${gameMinute}')`;
+
+                moveBallAndPlayers();
+
+                if (Math.random() < 0.003) {
+                    if (Math.random() > 0.5) { homeGoals++; logEvent(`[${gameMinute}'] GOAL! ${homeName} ทำประตู!`); }
+                    else { awayGoals++; logEvent(`[${gameMinute}'] GOAL! ${awayName} ได้ประตู!`); }
+                    document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
+                }
+
+                if (realSeconds >= TOTAL_REAL_SECONDS) {
+                    clearInterval(matchInterval);
+                    logEvent(`> [90'] จบการแข่งขัน! สกอร์รวม: ${homeGoals} - ${awayGoals}`);
+                    alert("จบการแข่งขัน 25 นาที!");
+                }
+            }, 1000);
+        }
+
+        function logEvent(msg) {
+            const logBox = document.getElementById('eventLog');
+            logBox.innerHTML += `> ${msg}<br>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function moveBallAndPlayers() {
+            let ball = document.getElementById('ball');
+            ball.style.left = Math.min(Math.max(Math.random() * 80 + 10, 10), 90) + '%';
+            ball.style.top = Math.min(Math.max(Math.random() * 80 + 10, 10), 90) + '%';
+
+            document.querySelectorAll('.player').forEach(p => {
+                if (p.innerText === 'GK') return;
+                let cX = parseFloat(p.style.left), cY = parseFloat(p.style.top);
+                p.style.left = Math.min(Math.max(cX + (Math.random() * 8 - 4), 8), 92) + '%';
+                p.style.top = Math.min(Math.max(cY + (Math.random() * 8 - 4), 8), 92) + '%';
+            });
+        }
+    </script>
+</body>
+</html>
