@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GBA Football Simulator - Champions History</title>
+    <title>GBA Football Simulator - Tournaments & History</title>
     <style>
         body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; margin: 0; }
         h1 { color: #fff; text-shadow: 2px 2px #000; margin-bottom: 5px; }
         .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+
+        /* Tournament Category Nav */
+        .tourney-nav { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .nav-btn { background: #1e1e1e; color: #aaa; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; }
+        .nav-btn:hover, .nav-btn.active { background: #ff4500; color: #fff; border-color: #ff4500; }
 
         .setup-box { background: #1e1e1e; padding: 15px; border-radius: 8px; display: inline-block; margin-bottom: 20px; border: 1px solid #333; }
         select { padding: 8px; background: #2b2b2b; color: #fff; border: 1px solid #444; border-radius: 4px; margin: 0 10px; max-width: 220px; }
@@ -14,6 +19,8 @@
         .match-clock { font-size: 18px; color: #aaa; margin-bottom: 15px; }
 
         .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        
+        /* Tactical Pitch */
         .pitch { width: 340px; height: 480px; background: repeating-linear-gradient(0deg, #2e8b57, #2e8b57 40px, #27794c 40px, #27794c 80px); border: 4px solid #fff; position: relative; border-radius: 4px; overflow: hidden; }
         .halfway-line { position: absolute; top: 50%; width: 100%; height: 2px; background: rgba(255,255,255,0.8); }
         .center-circle { position: absolute; top: 50%; left: 50%; width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
@@ -26,30 +33,47 @@
         
         .btn { background: #ff4500; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         
-        .history-box { width: 360px; height: 460px; overflow-y: auto; background: #1e1e1e; padding: 15px; border-radius: 8px; border: 1px solid #333; text-align: left; }
-        .history-box h3 { color: #ff4500; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 8px; font-size: 16px; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { padding: 6px 8px; border-bottom: 1px solid #2a2a2a; }
+        /* Event Log & History Boxes */
+        .side-box { width: 340px; height: 480px; display: flex; flex-direction: column; gap: 15px; }
+        .box-panel { background: #1e1e1e; padding: 12px; border-radius: 8px; border: 1px solid #333; text-align: left; overflow-y: auto; }
+        .box-panel h3 { color: #ff4500; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 6px; font-size: 14px; }
+        
+        .event-log { height: 180px; font-family: monospace; font-size: 12px; color: #00ffcc; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th, td { padding: 4px 6px; border-bottom: 1px solid #2a2a2a; }
         th { color: #ff4500; }
         .champ-name { color: #00ffcc; font-weight: bold; }
     </style>
 </head>
 <body>
     <h1>GBA Football Simulator</h1>
-    <div class="subtitle">ระบบจำลองการแข่งขัน และทำเนียบแชมป์รายการต่างๆ</div>
+    <div class="subtitle">ระบบการแข่งขัน บอลโลก บอลทวีป บอลลีก และทำเนียบแชมป์</div>
 
+    <!-- Tournament Filters -->
+    <div class="tourney-nav">
+        <button class="nav-btn active" onclick="filterCategory('ALL')">🏆 ทั้งหมด</button>
+        <button class="nav-btn" onclick="filterCategory('FIFA World Cup')">🌍 FIFA World Cup</button>
+        <button class="nav-btn" onclick="filterCategory('AFC Asian Cup')">🌏 AFC Asian Cup</button>
+        <button class="nav-btn" onclick="filterCategory('UEFA Euro')">🇪🇺 UEFA Euro</button>
+        <button class="nav-btn" onclick="filterCategory('Thai League 1')">🇹🇭 Thai League 1</button>
+        <button class="nav-btn" onclick="filterCategory('J1 League')">🇯🇵 J1 League</button>
+        <button class="nav-btn" onclick="filterCategory('Premier League')">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+        <button class="nav-btn" onclick="filterCategory('La Liga')">🇪🇸 La Liga</button>
+    </div>
+
+    <!-- Match Matchmaking Selectors -->
     <div class="setup-box">
         <label><b>ทีมเหย้า:</b></label>
         <select id="homeTeam">
             {% for t in teams %}
-            <option value="{{ t['id'] }}">{{ t['name'] }}</option>
+            <option value="{{ t['id'] }}" data-league="{{ t['league'] }}">{{ t['name'] }} ({{ t['league'] }})</option>
             {% endfor %}
         </select>
 
         <label><b>ทีมเยือน:</b></label>
         <select id="awayTeam">
             {% for t in teams %}
-            <option value="{{ t['id'] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t['name'] }}</option>
+            <option value="{{ t['id'] }}" data-league="{{ t['league'] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t['name'] }} ({{ t['league'] }})</option>
             {% endfor %}
         </select>
 
@@ -60,7 +84,7 @@
     <div class="match-clock" id="clockBoard">00:00 (In-Game: 0')</div>
 
     <div class="container">
-        <!-- Match Pitch -->
+        <!-- Tactical Pitch -->
         <div class="pitch">
             <div class="halfway-line"></div>
             <div class="center-circle"></div>
@@ -73,27 +97,36 @@
             {% endfor %}
         </div>
 
-        <!-- Trophy Hall of Fame Table -->
-        <div class="history-box">
-            <h3>🏆 Champions Hall of Fame (ประวัติแชมป์)</h3>
-            <table>
-                <tr>
-                    <th>รายการ</th>
-                    <th>ปี</th>
-                    <th>แชมป์</th>
-                    <th>รองแชมป์</th>
-                    <th>ผล</th>
-                </tr>
-                {% for h in trophies %}
-                <tr>
-                    <td>{{ h['tournament_name'] }}</td>
-                    <td>{{ h['year'] }}</td>
-                    <td class="champ-name">🥇 {{ h['champion_team'] }}</td>
-                    <td>🥈 {{ h['runner_up'] }}</td>
-                    <td>{{ h['score'] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
+        <!-- Side Panel: Live Logs & Trophy History -->
+        <div class="side-box">
+            <!-- Live Event Log -->
+            <div class="box-panel" style="height: 200px;">
+                <h3>🎙️ Match Commentary</h3>
+                <div class="event-log" id="eventLog">
+                    > เลือกรายการแข่งและคู่แข่งขันด้านบนเพื่อเริ่มการแข่งขัน...
+                </div>
+            </div>
+
+            <!-- Hall of Fame -->
+            <div class="box-panel" style="height: 250px;">
+                <h3>🏆 Champions Hall of Fame</h3>
+                <table>
+                    <tr>
+                        <th>รายการ</th>
+                        <th>ปี</th>
+                        <th>แชมป์</th>
+                        <th>สกอร์</th>
+                    </tr>
+                    {% for h in trophies %}
+                    <tr>
+                        <td>{{ h['tournament_name'] }}</td>
+                        <td>{{ h['year'] }}</td>
+                        <td class="champ-name">🥇 {{ h['champion_team'] }}</td>
+                        <td>{{ h['score'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
         </div>
     </div>
 
@@ -101,14 +134,44 @@
         let matchInterval = null, realSeconds = 0, homeGoals = 0, awayGoals = 0;
         const TOTAL_REAL_SECONDS = 25 * 60;
 
+        function filterCategory(cat) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const homeSelect = document.getElementById('homeTeam');
+            const awaySelect = document.getElementById('awayTeam');
+
+            Array.from(homeSelect.options).forEach(opt => {
+                const league = opt.getAttribute('data-league');
+                if (cat === 'ALL' || league.includes(cat)) {
+                    opt.style.display = 'block';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+
+            Array.from(awaySelect.options).forEach(opt => {
+                const league = opt.getAttribute('data-league');
+                if (cat === 'ALL' || league.includes(cat)) {
+                    opt.style.display = 'block';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+
+            for (let opt of homeSelect.options) { if (opt.style.display !== 'none') { homeSelect.value = opt.value; break; } }
+            for (let opt of awaySelect.options) { if (opt.style.display !== 'none' && opt.value !== homeSelect.value) { awaySelect.value = opt.value; break; } }
+        }
+
         function start25MinMatch() {
             if (matchInterval) clearInterval(matchInterval);
             realSeconds = 0; homeGoals = 0; awayGoals = 0;
 
-            const homeName = document.getElementById('homeTeam').options[document.getElementById('homeTeam').selectedIndex].text;
-            const awayName = document.getElementById('awayTeam').options[document.getElementById('awayTeam').selectedIndex].text;
+            const homeName = document.getElementById('homeTeam').options[document.getElementById('homeTeam').selectedIndex].text.split(' (')[0];
+            const awayName = document.getElementById('awayTeam').options[document.getElementById('awayTeam').selectedIndex].text.split(' (')[0];
 
             document.getElementById('scoreBoard').innerText = `${homeName} 0 - 0 ${awayName}`;
+            document.getElementById('eventLog').innerHTML = `> เริ่มการแข่งขันระหว่าง ${homeName} พบ ${awayName}<br>`;
 
             matchInterval = setInterval(() => {
                 realSeconds++;
@@ -120,16 +183,23 @@
                 moveBallAndPlayers();
 
                 if (Math.random() < 0.003) {
-                    if (Math.random() > 0.5) homeGoals++;
-                    else awayGoals++;
+                    if (Math.random() > 0.5) { homeGoals++; logEvent(`[${gameMinute}'] GOAL! ${homeName} ยิงประตูได้!`); }
+                    else { awayGoals++; logEvent(`[${gameMinute}'] GOAL! ${awayName} ได้ประตู!`); }
                     document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
                 }
 
                 if (realSeconds >= TOTAL_REAL_SECONDS) {
                     clearInterval(matchInterval);
-                    alert(`จบการแข่งขัน 25 นาที!\nผลสกอร์: ${homeName} ${homeGoals} - ${awayGoals} ${awayName}`);
+                    logEvent(`> [90'] จบการแข่งขัน! สกอร์รวม: ${homeGoals} - ${awayGoals}`);
+                    alert("จบการแข่งขัน 25 นาที!");
                 }
             }, 1000);
+        }
+
+        function logEvent(msg) {
+            const logBox = document.getElementById('eventLog');
+            logBox.innerHTML += `> ${msg}<br>`;
+            logBox.scrollTop = logBox.scrollHeight;
         }
 
         function moveBallAndPlayers() {
