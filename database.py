@@ -9,7 +9,6 @@ def get_db_connection():
 def init_db(conn):
     cursor = conn.cursor()
     
-    # 1. Teams Table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS teams (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,91 +22,52 @@ def init_db(conn):
         )
     ''')
 
-    # 2. Managers Table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS managers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            tactical_style TEXT DEFAULT 'Balanced',
-            in_game_reading INTEGER DEFAULT 75,
-            team_id INTEGER
-        )
-    ''')
-
-    # 3. Players Table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS players (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            position TEXT NOT NULL,
-            age INTEGER,
-            pace INTEGER DEFAULT 70,
-            finishing INTEGER DEFAULT 70,
-            vision INTEGER DEFAULT 70,
-            stamina INTEGER DEFAULT 100,
-            team_id INTEGER
-        )
-    ''')
-
-    # Seed National Teams (Complete Confederations)
+    # National Teams with Tournaments
     national_teams = [
-        ('Argentina', 'National', 'Argentina', 'CONMEBOL', 92, 1, 'World Cup Qualifiers'),
-        ('France', 'National', 'France', 'UEFA', 91, 2, 'UEFA Euro'),
-        ('Spain', 'National', 'Spain', 'UEFA', 90, 3, 'UEFA Euro'),
-        ('England', 'National', 'England', 'UEFA', 89, 4, 'UEFA Euro'),
-        ('Brazil', 'National', 'Brazil', 'CONMEBOL', 90, 5, 'World Cup Qualifiers'),
-        ('Japan', 'National', 'Japan', 'AFC', 85, 18, 'AFC Asian Cup'),
-        ('South Korea', 'National', 'South Korea', 'AFC', 83, 22, 'AFC Asian Cup'),
-        ('Australia', 'National', 'Australia', 'AFC', 80, 24, 'AFC Asian Cup'),
-        ('Saudi Arabia', 'National', 'Saudi Arabia', 'AFC', 78, 56, 'AFC Asian Cup'),
-        ('Thailand', 'National', 'Thailand', 'AFC', 73, 101, 'AFC Asian Cup'),
-        ('Vietnam', 'National', 'Vietnam', 'AFC', 69, 115, 'AFC Asian Cup'),
-        ('Indonesia', 'National', 'Indonesia', 'AFC', 68, 133, 'AFC Asian Cup')
+        ('Argentina', 'National', 'Argentina', 'CONMEBOL', 92, 1, 'FIFA World Cup'),
+        ('France', 'National', 'France', 'UEFA', 91, 2, 'FIFA World Cup / UEFA Euro'),
+        ('Spain', 'National', 'Spain', 'UEFA', 90, 3, 'FIFA World Cup / UEFA Euro'),
+        ('England', 'National', 'England', 'UEFA', 89, 4, 'FIFA World Cup / UEFA Euro'),
+        ('Brazil', 'National', 'Brazil', 'CONMEBOL', 90, 5, 'FIFA World Cup'),
+        ('Japan', 'National', 'Japan', 'AFC', 85, 18, 'FIFA World Cup / AFC Asian Cup'),
+        ('South Korea', 'National', 'South Korea', 'AFC', 83, 22, 'FIFA World Cup / AFC Asian Cup'),
+        ('Australia', 'National', 'Australia', 'AFC', 80, 24, 'FIFA World Cup / AFC Asian Cup'),
+        ('Saudi Arabia', 'National', 'Saudi Arabia', 'AFC', 78, 56, 'FIFA World Cup / AFC Asian Cup'),
+        ('Thailand', 'National', 'Thailand', 'AFC', 73, 101, 'FIFA World Cup / AFC Asian Cup'),
+        ('Vietnam', 'National', 'Vietnam', 'AFC', 69, 115, 'FIFA World Cup / AFC Asian Cup'),
+        ('Indonesia', 'National', 'Indonesia', 'AFC', 68, 133, 'FIFA World Cup / AFC Asian Cup')
     ]
     cursor.executemany('''
         INSERT INTO teams (name, type, country, confederation, rating, fifa_ranking, league)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', national_teams)
 
-    # Seed Club Teams
+    # Club Teams with Domestic Leagues
     club_teams = [
+        # Thai League 1
         ('Buriram United', 'Club', 'Thailand', 'AFC', 75, 0, 'Thai League 1'),
         ('BG Pathum United', 'Club', 'Thailand', 'AFC', 73, 0, 'Thai League 1'),
+        ('Port FC', 'Club', 'Thailand', 'AFC', 72, 0, 'Thai League 1'),
+        ('Bangkok United', 'Club', 'Thailand', 'AFC', 74, 0, 'Thai League 1'),
+        
+        # J1 League
         ('Kawasaki Frontale', 'Club', 'Japan', 'AFC', 78, 0, 'J1 League'),
         ('Yokohama F. Marinos', 'Club', 'Japan', 'AFC', 78, 0, 'J1 League'),
+        ('Vissel Kobe', 'Club', 'Japan', 'AFC', 79, 0, 'J1 League'),
+        
+        # Premier League
         ('Manchester City', 'Club', 'England', 'UEFA', 92, 0, 'Premier League'),
         ('Arsenal', 'Club', 'England', 'UEFA', 89, 0, 'Premier League'),
+        ('Liverpool', 'Club', 'England', 'UEFA', 89, 0, 'Premier League'),
+        
+        # La Liga
         ('Real Madrid', 'Club', 'Spain', 'UEFA', 93, 0, 'La Liga'),
-        ('FC Barcelona', 'Club', 'Spain', 'UEFA', 89, 0, 'La Liga')
+        ('FC Barcelona', 'Club', 'Spain', 'UEFA', 89, 0, 'La Liga'),
+        ('Atletico Madrid', 'Club', 'Spain', 'UEFA', 86, 0, 'La Liga')
     ]
     cursor.executemany('''
         INSERT INTO teams (name, type, country, confederation, rating, fifa_ranking, league)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', club_teams)
-
-    # Auto-generate Managers & Players for each team
-    cursor.execute("SELECT id, name, rating FROM teams")
-    teams = cursor.fetchall()
-    positions = ['GK', 'RB', 'CB', 'CB', 'LB', 'CDM', 'CM', 'CAM', 'RW', 'ST', 'LW']
-
-    for team in teams:
-        t_id, t_name, t_rating = team['id'], team['name'], team['rating']
-        
-        # Add Manager
-        cursor.execute("INSERT INTO managers (name, tactical_style, in_game_reading, team_id) VALUES (?, ?, ?, ?)",
-                       (f"Manager {t_name}", "Balanced", random.randint(75, 95), t_id))
-        
-        # Add Squad
-        for pos in positions:
-            p_name = f"{t_name} {pos}"
-            if t_name == 'Thailand' and pos == 'CAM': p_name = 'Chanathip Songkrasin'
-            elif t_name == 'Thailand' and pos == 'ST': p_name = 'Supachai Chaided'
-            elif t_name == 'Real Madrid' and pos == 'CAM': p_name = 'Jude Bellingham'
-            elif t_name == 'Manchester City' and pos == 'ST': p_name = 'Erling Haaland'
-
-            cursor.execute('''
-                INSERT INTO players (name, position, age, pace, finishing, vision, stamina, team_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (p_name, pos, random.randint(19, 32), t_rating, t_rating, t_rating, 100, t_id))
 
     conn.commit()
