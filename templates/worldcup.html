@@ -1,0 +1,76 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<style>
+    .btn { background: #ffb703; color: #121212; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
+    .groups-container { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; width: 90%; max-width: 1000px; margin: 0 auto; text-align: left; }
+    .groups-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+    .group-card { flex: 1 1 calc(25% - 15px); background: #141414; padding: 12px; border-radius: 6px; border: 1px solid #2a2a2a; box-sizing: border-box; min-width: 200px; }
+    .group-card h4 { color: #00ffcc; margin-top: 0; font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+    .group-card ul { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+    .group-card li { padding: 5px 0; border-bottom: 1px dashed #222; display: flex; justify-content: space-between; }
+    .conf-badge { font-size: 9px; padding: 1px 4px; border-radius: 3px; background: #333; color: #ffb703; }
+    .log-box { background: #141414; border: 1px solid #333; color: #00ffcc; font-family: monospace; font-size: 12px; padding: 10px; height: 100px; overflow-y: auto; text-align: left; margin-bottom: 20px; border-radius: 6px; }
+</style>
+
+<div class="header-title">
+    <h1>🌍 FIFA World Cup 32 Qualifiers & Group Stage</h1>
+    <p>ระบบคัดเลือกตามโควตาทวีปจริง (AFC 6, CAF 4, CONMEBOL 5, CONCACAF 3, UEFA 13, OFC 1) รวม 32 ทีม</p>
+</div>
+
+<button class="btn" onclick="runQualifiersAndDraw()">🌍 จำลองรอบคัดเลือกและจับสลากกลุ่ม (Group A - H)</button>
+
+<div class="groups-container">
+    <div class="log-box" id="qualifierLog">> กดปุ่มด้านบนเพื่อเริ่มจำลองรอบคัดเลือกแยกตามทวีป...</div>
+    <div class="groups-grid" id="groupsDisplay"></div>
+</div>
+
+<script>
+    const allNationalTeams = [
+        {% for t in teams %}
+        { name: "{{ t['name'] }}", conf: "{{ t['confederation'] }}", rating: {{ t['rating'] }} },
+        {% endfor %}
+    ];
+
+    window.onload = function() { runQualifiersAndDraw(); };
+
+    function runQualifiersAndDraw() {
+        const quotas = { 'AFC': 6, 'CAF': 4, 'CONMEBOL': 5, 'CONCACAF': 3, 'UEFA': 13, 'OFC': 1 };
+        let qualified32 = [];
+        const logBox = document.getElementById('qualifierLog');
+        logBox.innerHTML = `> 🌍 เริ่มการจำลองฟุตบอลโลกรอบคัดเลือกแยกตามทวีป...<br>`;
+
+        for (let conf in quotas) {
+            let confTeams = allNationalTeams.filter(t => t.conf === conf);
+            confTeams.sort((a, b) => (b.rating + Math.random() * 10) - (a.rating + Math.random() * 10));
+            let selected = confTeams.slice(0, quotas[conf]);
+            qualified32.push(...selected);
+            logBox.innerHTML += `> โซน ${conf}: ผ่านเข้ารอบ ${selected.length}/${quotas[conf]} ทีม<br>`;
+        }
+
+        for (let i = qualified32.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [qualified32[i], qualified32[j]] = [qualified32[j], qualified32[i]];
+        }
+        render32Groups(qualified32);
+    }
+
+    function render32Groups(qualifiedList) {
+        const groupNames = ['Group A', 'Group B', 'Group C', 'Group D', 'Group E', 'Group F', 'Group G', 'Group H'];
+        const groupsDisplay = document.getElementById('groupsDisplay');
+        groupsDisplay.innerHTML = '';
+        let teamIdx = 0;
+
+        groupNames.forEach(gName => {
+            let gTeams = qualifiedList.slice(teamIdx, teamIdx + 4);
+            teamIdx += 4;
+            let cardHTML = `<div class="group-card"><h4>📌 ${gName}</h4><ul>`;
+            gTeams.forEach((t, idx) => {
+                cardHTML += `<li><span>${idx+1}. ${t.name}</span> <span class="conf-badge">${t.conf}</span></li>`;
+            });
+            cardHTML += `</ul></div>`;
+            groupsDisplay.innerHTML += cardHTML;
+        });
+    }
+</script>
+{% endblock %}
