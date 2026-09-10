@@ -64,10 +64,16 @@ def init_db(conn):
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', NATIONAL_TEAMS + CLUB_TEAMS)
 
-    # Seed Managers & Players
+    # Seed Managers & 23-Man Full Roster
     cursor.execute("SELECT id, name, rating FROM teams")
     all_teams = cursor.fetchall()
-    positions_list = ['GK', 'RB', 'CB', 'CB', 'LB', 'CDM', 'CM', 'CAM', 'RW', 'ST', 'LW', 'SUB-GK', 'SUB-DEF', 'SUB-MID', 'SUB-FWD']
+    
+    positions_23 = [
+        'GK', 'GK', 'GK',
+        'RB', 'RB', 'LB', 'LB', 'CB', 'CB', 'CB', 'CB',
+        'CDM', 'CDM', 'CM', 'CM', 'CAM', 'CAM',
+        'RW', 'RW', 'LW', 'LW', 'ST', 'ST'
+    ]
 
     for team in all_teams:
         t_id, t_name, t_rating = team['id'], team['name'], team['rating']
@@ -77,7 +83,7 @@ def init_db(conn):
         cursor.execute("INSERT INTO managers (name, tactical_style, in_game_reading, team_id) VALUES (?, ?, ?, ?)",
                        (m_info[0], m_info[1], random.randint(78, 96), t_id))
 
-        # Add Players
+        # Add Known Star Players
         existing_stars = STAR_PLAYERS.get(t_name, [])
         for s_name, s_pos in existing_stars:
             cursor.execute('''
@@ -85,10 +91,11 @@ def init_db(conn):
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (s_name, s_pos, random.randint(20, 33), min(t_rating+3, 99), min(t_rating+3, 99), min(t_rating+3, 99), 100, t_id))
 
-        needed_count = 15 - len(existing_stars)
+        # Generate remaining squad members up to 23 players
+        needed_count = 23 - len(existing_stars)
         for i in range(needed_count):
-            pos = positions_list[i % len(positions_list)]
-            p_name = f"{t_name} Player {i+1}"
+            pos = positions_23[i % len(positions_23)]
+            p_name = f"{t_name} Squad No.{i + len(existing_stars) + 1}"
             cursor.execute('''
                 INSERT INTO players (name, position, age, pace, finishing, vision, stamina, team_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
