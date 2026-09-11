@@ -6,7 +6,8 @@
     select, button { padding: 8px 12px; background: #2b2b2b; color: #fff; border: 1px solid #444; border-radius: 4px; margin: 0 6px; }
     
     .match-score { font-size: 32px; font-weight: bold; color: #ff4500; }
-    .match-status { font-size: 14px; color: #00ffcc; font-weight: bold; margin-bottom: 10px; }
+    .match-status { font-size: 14px; color: #00ffcc; font-weight: bold; margin-bottom: 6px; }
+    .tactics-banner { font-size: 13px; color: #ffb703; margin-bottom: 15px; font-weight: 500; }
     .match-clock { font-size: 18px; color: #aaa; margin-bottom: 15px; }
 
     .main-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; text-align: left; }
@@ -18,19 +19,19 @@
     .penalty-area-top { position: absolute; top: 0; left: 50%; width: 150px; height: 65px; border: 2px solid rgba(255,255,255,0.8); border-top: none; transform: translateX(-50%); }
     .penalty-area-bottom { position: absolute; bottom: 0; left: 50%; width: 150px; height: 65px; border: 2px solid rgba(255,255,255,0.8); border-bottom: none; transform: translateX(-50%); }
     
-    .player { position: absolute; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: white; transform: translate(-50%, -50%); border: 2px solid #fff; transition: all 1.5s ease-in-out; }
+    .player { position: absolute; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: white; transform: translate(-50%, -50%); border: 2px solid #fff; transition: all 1.2s ease-in-out; }
     .home-team { background-color: #d32f2f; } .away-team { background-color: #1976d2; } .gk { background-color: #fbc02d; color: black; }
     .ball { position: absolute; width: 10px; height: 10px; background-color: #fff; border-radius: 50%; box-shadow: 0 0 6px #fff; transform: translate(-50%, -50%); transition: all 0.8s ease-out; z-index: 10; }
     
     .btn-start { background: #ff4500; color: white; font-weight: bold; cursor: pointer; }
 
     /* Side Boxes */
-    .panel-box { background: #1e1e1e; border: 1px solid #333; border-radius: 6px; padding: 12px; width: 320px; height: 480px; box-sizing: border-box; overflow-y: auto; }
+    .panel-box { background: #1e1e1e; border: 1px solid #333; border-radius: 6px; padding: 12px; width: 340px; height: 480px; box-sizing: border-box; overflow-y: auto; }
     .panel-box h3 { color: #ff4500; margin-top: 0; font-size: 15px; border-bottom: 1px solid #333; padding-bottom: 6px; }
 
-    .commentary-log { font-family: monospace; font-size: 12px; color: #00ffcc; line-height: 1.5; }
+    .commentary-log { font-family: monospace; font-size: 12px; color: #00ffcc; line-height: 1.6; }
     .timeline-list { list-style: none; padding: 0; margin: 0; font-size: 12px; }
-    .timeline-list li { padding: 4px 0; border-bottom: 1px dashed #333; }
+    .timeline-list li { padding: 5px 0; border-bottom: 1px dashed #333; }
     .badge-yellow { background: #ffd166; color: #000; padding: 1px 4px; border-radius: 2px; font-weight: bold; }
     .badge-red { background: #ef476f; color: #fff; padding: 1px 4px; border-radius: 2px; font-weight: bold; }
     .badge-goal { background: #06d6a0; color: #000; padding: 1px 4px; border-radius: 2px; font-weight: bold; }
@@ -42,8 +43,8 @@
 </style>
 
 <div class="header-title">
-    <h1>⚽ Match Center & Live Commentary</h1>
-    <p>ระบบพากย์สด ไทม์ไลน์ 90 นาที กฎการต่อเวลา/จุดโทษ และขุมกำลังนักเตะเบอร์ 1-23</p>
+    <h1>⚽ Match Center & Tactical Commentary</h1>
+    <p>ระบบพากย์บอลสดเจาะจงรายบุคคล แผนการเล่น 4-3-3 / 4-2-3-1 และไทม์ไลน์ 90 นาที</p>
 </div>
 
 <div class="setup-box">
@@ -78,19 +79,20 @@
 
 <div class="match-score" id="scoreBoard">Home 0 - 0 Away</div>
 <div class="match-status" id="matchStatus">ยังไม่เริ่มการแข่งขัน</div>
+<div class="tactics-banner" id="tacticsBanner">📋 แผนการเล่น: Home (4-3-3 Possession) VS Away (4-2-3-1 Counter Attack)</div>
 <div class="match-clock" id="clockBoard">00:00 (In-Game: 0')</div>
 
 <div class="main-grid">
     <!-- Panel 1: Live Commentary -->
     <div class="panel-box">
-        <h3>🎙️ ผู้บรรยายพากย์สด (Live Commentary)</h3>
+        <h3>🎙️ ผู้บรรยายพากย์สด (Play-by-Play)</h3>
         <div class="commentary-log" id="commentaryLog">
             > เลือกทีมและกดเริ่มแข่งขันเพื่อรับฟังบรรยายสด...
         </div>
     </div>
 
     <!-- Panel 2: Pitch Arena -->
-    <div class="pitch">
+    <div class="pitch" id="pitchArena">
         <div class="halfway-line"></div>
         <div class="center-circle"></div>
         <div class="penalty-area-top"></div>
@@ -98,7 +100,7 @@
         <div class="ball" id="ball" style="left: 50%; top: 50%;"></div>
 
         {% for p in pitch_players %}
-            <div class="player {{ p.type }}" style="left: {{ p.x }}%; top: {{ p.y }}%;">{{ p.num }}</div>
+            <div class="player {{ p.type }}" id="player-{{ loop.index }}" style="left: {{ p.x }}%; top: {{ p.y }}%;">{{ p.num }}</div>
         {% endfor %}
     </div>
 
@@ -133,7 +135,10 @@
 <script>
     let matchInterval = null, realSeconds = 0, homeGoals = 0, awayGoals = 0;
     let inGameMin = 0;
+    let homePlayersData = [], awayPlayersData = [];
     const TOTAL_REAL_SECONDS = 25 * 60;
+
+    const formations = ["4-3-3 (Possession)", "4-2-3-1 (High Press)", "3-5-2 (Wing Play)", "4-4-2 (Direct Attack)"];
 
     window.onload = function() {
         filterTeamsByLeague();
@@ -144,39 +149,25 @@
         const homeSelect = document.getElementById('homeTeam');
         const awaySelect = document.getElementById('awayTeam');
 
-        let visibleHomeOptions = [];
-        let visibleAwayOptions = [];
+        let visibleHome = [], visibleAway = [];
 
-        // กรองการแสดงผลใน Dropdown ทีมเหย้า และ ทีมเยือน
         Array.from(homeSelect.options).forEach(opt => {
             const league = opt.getAttribute('data-league') || '';
             if (selectedLeague === 'ALL' || league.includes(selectedLeague)) {
-                opt.style.display = 'block';
-                visibleHomeOptions.push(opt);
-            } else {
-                opt.style.display = 'none';
-            }
+                opt.style.display = 'block'; visibleHome.push(opt);
+            } else { opt.style.display = 'none'; }
         });
 
         Array.from(awaySelect.options).forEach(opt => {
             const league = opt.getAttribute('data-league') || '';
             if (selectedLeague === 'ALL' || league.includes(selectedLeague)) {
-                opt.style.display = 'block';
-                visibleAwayOptions.push(opt);
-            } else {
-                opt.style.display = 'none';
-            }
+                opt.style.display = 'block'; visibleAway.push(opt);
+            } else { opt.style.display = 'none'; }
         });
 
-        // เลือกทีมแรกที่แสดงผลให้เป็นทีมเหย้า และเลือกทีมที่สองให้เป็นทีมเยือน
-        if (visibleHomeOptions.length > 0) {
-            homeSelect.value = visibleHomeOptions[0].value;
-        }
-        if (visibleAwayOptions.length > 1) {
-            awaySelect.value = visibleAwayOptions[1].value;
-        } else if (visibleAwayOptions.length > 0) {
-            awaySelect.value = visibleAwayOptions[0].value;
-        }
+        if (visibleHome.length > 0) homeSelect.value = visibleHome[0].value;
+        if (visibleAway.length > 1) awaySelect.value = visibleAway[1].value;
+        else if (visibleAway.length > 0) awaySelect.value = visibleAway[0].value;
 
         loadRosters();
     }
@@ -188,13 +179,19 @@
         if (homeId) {
             fetch(`/api/team-roster/${homeId}`)
             .then(res => res.json())
-            .then(data => renderRosterTable('homeRosterTable', data));
+            .then(data => {
+                homePlayersData = data;
+                renderRosterTable('homeRosterTable', data);
+            });
         }
 
         if (awayId) {
             fetch(`/api/team-roster/${awayId}`)
             .then(res => res.json())
-            .then(data => renderRosterTable('awayRosterTable', data));
+            .then(data => {
+                awayPlayersData = data;
+                renderRosterTable('awayRosterTable', data);
+            });
         }
     }
 
@@ -223,17 +220,22 @@
         const awaySelect = document.getElementById('awayTeam');
 
         if (homeSelect.selectedIndex === -1 || awaySelect.selectedIndex === -1) {
-            alert("กรุณาเลือกทีมเหย้าและทีมเยือนก่อนครับ");
-            return;
+            alert("กรุณาเลือกทีมเหย้าและทีมเยือนก่อนครับ"); return;
         }
 
         const homeName = homeSelect.options[homeSelect.selectedIndex].text.split(' (')[0];
         const awayName = awaySelect.options[awaySelect.selectedIndex].text.split(' (')[0];
         const tourney = document.getElementById('tourneyType').options[document.getElementById('tourneyType').selectedIndex].text;
 
+        const hForm = formations[Math.floor(Math.random() * formations.length)];
+        const aForm = formations[Math.floor(Math.random() * formations.length)];
+        document.getElementById('tacticsBanner').innerText = `📋 แผนการเล่น: ${homeName} (${hForm}) VS ${awayName} (${aForm})`;
+
         document.getElementById('scoreBoard').innerText = `${homeName} 0 - 0 ${awayName}`;
         document.getElementById('matchStatus').innerText = `กำลังแข่งขัน (${tourney})`;
-        addCommentary(`> กรรมการเป่านกหวีดเริ่มการแข่งขันรายการ ${tourney} ระหว่าง ${homeName} พบ ${awayName}!`);
+        
+        addCommentary(`> 🟢 กรรมการเป่านกหวีดเริ่มการแข่งขันรายการ ${tourney}!`);
+        addCommentary(`> 📋 แผนการเล่น: ${homeName} [${hForm}] ปะทะ ${awayName} [${aForm}]`);
 
         matchInterval = setInterval(() => {
             realSeconds++;
@@ -242,8 +244,7 @@
 
             document.getElementById('clockBoard').innerText = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')} (In-Game: ${inGameMin}')`;
 
-            moveBallAndPlayers();
-            simulateMatchEvents(homeName, awayName);
+            simulatePlayByPlayAction(homeName, awayName);
 
             if (realSeconds >= TOTAL_REAL_SECONDS) {
                 clearInterval(matchInterval);
@@ -252,29 +253,80 @@
         }, 1000);
     }
 
-    function simulateMatchEvents(homeName, awayName) {
+    function simulatePlayByPlayAction(homeName, awayName) {
+        let isHomeAction = Math.random() > 0.5;
+        let activeTeam = isHomeAction ? homeName : awayName;
+        let activeSquad = isHomeAction ? homePlayersData : awayPlayersData;
+        let oppSquad = isHomeAction ? awayPlayersData : homePlayersData;
+
+        // Pick random active starter player
+        let starters = activeSquad.filter(p => p.role_type === 'STARTER');
+        let p1 = starters[Math.floor(Math.random() * starters.length)] || { shirt_number: 10, name: "Player", position: "CAM" };
+        let p2 = starters[Math.floor(Math.random() * starters.length)] || { shirt_number: 9, name: "Striker", position: "ST" };
+        let oppP = oppSquad[Math.floor(Math.random() * oppSquad.length)] || { shirt_number: 4, name: "Defender", position: "CB" };
+
         let rand = Math.random();
-        let activeTeam = Math.random() > 0.5 ? homeName : awayName;
+
+        // Pass & Ball Movement Animation
+        moveBallToPlayer(isHomeAction, p1.position);
 
         if (rand < 0.003) {
-            if (activeTeam === homeName) homeGoals++; else awayGoals++;
+            // GOAL
+            if (isHomeAction) homeGoals++; else awayGoals++;
             document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
-            addCommentary(`[${inGameMin}'] ⚽ GOAL! ${activeTeam} ซัดประตูเข้าไปอย่างงดงาม!`);
-            addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> ${activeTeam} ยิงประตู (${homeGoals}-${awayGoals})`);
+            addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${p1.shirt_number} ${p1.name} (${activeTeam}) ปั่นด้วยขวาซุกหน้าต่างเสาไกลเข้าไปอย่างงดงาม!`);
+            addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> #${p1.shirt_number} ${p1.name} (${activeTeam})`);
         } else if (rand < 0.006) {
-            addCommentary(`[${inGameMin}'] 🟨 กรรมการชูใบเหลืองให้ผู้เล่นของ ${activeTeam} จากจังหวะเข้าปะทะหนัก!`);
-            addTimeline(`${inGameMin}'`, `<span class="badge-yellow">ใบเหลือง</span> ${activeTeam}`);
-        } else if (rand < 0.007) {
-            addCommentary(`[${inGameMin}'] 🚩 ${activeTeam} ได้ลูกเตะมุม เปิดย้อยเข้าหากรอบเขตโทษ!`);
-        } else if (rand < 0.008) {
-            addCommentary(`[${inGameMin}'] 🚩 ไลน์แมนยกธง! ${activeTeam} อยู่ในตำแหน่งล้ำหน้า`);
-        } else if (rand < 0.009) {
-            addCommentary(`[${inGameMin}'] 🔄 ${activeTeam} ทำการเปลี่ยนตัวผู้เล่น ส่งตัวสำรองลงสนาม`);
-            addTimeline(`${inGameMin}'`, `🔄 เปลี่ยนตัวผู้เล่น (${activeTeam})`);
-        } else if (rand < 0.0093) {
-            addCommentary(`[${inGameMin}'] 🟥 ใบแดง! กรรมการไล่ผู้เล่น ${activeTeam} ออกจากสนามทันที!`);
-            addTimeline(`${inGameMin}'`, `<span class="badge-red">ใบแดง</span> ${activeTeam}`);
+            // YELLOW CARD
+            addCommentary(`[${inGameMin}'] 🟨 ใบเหลือง! #${oppP.shirt_number} ${oppP.name} (ฝั่งตรงข้าม) เข้าพรวดพุ่งเสียบสกัดใส่ #${p1.shirt_number} ${p1.name}!`);
+            addTimeline(`${inGameMin}'`, `<span class="badge-yellow">ใบเหลือง</span> #${oppP.shirt_number} ${oppP.name}`);
+        } else if (rand < 0.010) {
+            // SHOT SAVED / NEAR MISS
+            addCommentary(`[${inGameMin}'] 🧤 #${p1.shirt_number} ${p1.name} (${activeTeam}) สับไกลระยะ 20 หลา บอลพุ่งแรงแต่ผู้รักษาประตูยังปัดออกหลังได้ทัน!`);
+        } else if (rand < 0.015) {
+            // CORNER KICK
+            addCommentary(`[${inGameMin}'] 🚩 ${activeTeam} ได้ลูกเตะมุม #${p1.shirt_number} ${p1.name} วิ่งเข้ามาเปิดโด่งเข้าสู่กรอบเขตโทษ`);
+        } else if (rand < 0.020) {
+            // OFFSIDE
+            addCommentary(`[${inGameMin}'] 🚩 ไลน์แมนยกธง! #${p1.shirt_number} ${p1.name} (${activeTeam}) วิ่งสอดรับบอลแต่อยู่ในตำแหน่งล้ำหน้า`);
+        } else if (rand < 0.025) {
+            // FOUL / FREE KICK
+            addCommentary(`[${inGameMin}'] 🛑 กรรมการเป่านกหวีดฟาวล์! #${oppP.shirt_number} ${oppP.name} เหนี่ยวเสื้อ #${p1.shirt_number} ${p1.name} ล้มลง ${activeTeam} ได้ลูกฟรีคิก`);
+        } else if (rand < 0.030) {
+            // SUBSTITUTION
+            let subs = activeSquad.filter(p => p.role_type === 'SUB');
+            let pSub = subs[Math.floor(Math.random() * subs.length)] || { shirt_number: 14, name: "Sub Player" };
+            addCommentary(`[${inGameMin}'] 🔄 ${activeTeam} เปลี่ยนตัว: ถอด #${p1.shirt_number} ${p1.name} ออก แล้วส่ง #${pSub.shirt_number} ${pSub.name} ลงสนาม`);
+            addTimeline(`${inGameMin}'`, `🔄 เปลี่ยนตัว: #${pSub.shirt_number} ${pSub.name} (${activeTeam})`);
+        } else if (rand < 0.032) {
+            // RED CARD
+            addCommentary(`[${inGameMin}'] 🟥 ใบแดง! #${oppP.shirt_number} ${oppP.name} โดนใบแดงไล่ออกจากสนามทันทีจากจังหวะฟาวล์ร้ายแรง!`);
+            addTimeline(`${inGameMin}'`, `<span class="badge-red">ใบแดง</span> #${oppP.shirt_number} ${oppP.name}`);
+        } else if (rand < 0.20) {
+            // REGULAR PLAY commentary (Continuous)
+            const actions = [
+                `#${p1.shirt_number} ${p1.name} จ่ายบอลสั้นให้ #${p2.shirt_number} ${p2.name} ทำเกมต่อกลางสนาม`,
+                `#${p1.shirt_number} ${p1.name} วางบอลยาวข้ามฝากออกทางริมเส้นอย่างแม่นยำ`,
+                `#${p1.shirt_number} ${p1.name} ลากตะลุยแทรกกลาง ดึงจังหวะรอเพื่อนเติมเกมขึ้นมา`,
+                `#${oppP.shirt_number} ${oppP.name} อ่านเกมดี เข้ามาแย่งตัดบอลจากเท้าของ #${p1.shirt_number} ${p1.name}`
+            ];
+            let actMsg = actions[Math.floor(Math.random() * actions.length)];
+            addCommentary(`[${inGameMin}'] ⚽ (${activeTeam}) ${actMsg}`);
         }
+    }
+
+    function moveBallToPlayer(isHome, pos) {
+        let ball = document.getElementById('ball');
+        let posX = 50, posY = 50;
+
+        if (pos === 'GK') posY = isHome ? 90 : 10;
+        else if (pos.includes('CB') || pos.includes('RB') || pos.includes('LB')) posY = isHome ? 75 : 25;
+        else if (pos.includes('CM') || pos.includes('CDM') || pos.includes('CAM')) posY = isHome ? 55 : 45;
+        else posY = isHome ? 35 : 65;
+
+        posX = 20 + Math.random() * 60;
+        ball.style.left = posX + '%';
+        ball.style.top = posY + '%';
     }
 
     function checkExtraTimeAndPenalties(homeName, awayName, tourney) {
@@ -294,7 +346,7 @@
             }
         } else {
             document.getElementById('matchStatus').innerText = `จบการแข่งขัน 90 นาที`;
-            addCommentary(`> [90'] กรรมการเป่านกหวีดหมดเวลาการแข่งขัน! สกอร์รวม: ${homeGoals} - ${awayGoals}`);
+            addCommentary(`> 🏁 [90'] กรรมการเป่านกหวีดหมดเวลาการแข่งขัน! สกอร์รวม: ${homeGoals} ${homeGoals} - ${awayGoals} ${awayName}`);
         }
     }
 
@@ -307,19 +359,6 @@
     function addTimeline(time, msg) {
         const list = document.getElementById('timelineList');
         list.innerHTML = `<li><b>[${time}]</b> ${msg}</li>` + list.innerHTML;
-    }
-
-    function moveBallAndPlayers() {
-        let ball = document.getElementById('ball');
-        ball.style.left = Math.min(Math.max(Math.random() * 80 + 10, 10), 90) + '%';
-        ball.style.top = Math.min(Math.max(Math.random() * 80 + 10, 10), 90) + '%';
-
-        document.querySelectorAll('.player').forEach(p => {
-            if (p.innerText === '1') return;
-            let cX = parseFloat(p.style.left), cY = parseFloat(p.style.top);
-            p.style.left = Math.min(Math.max(cX + (Math.random() * 8 - 4), 8), 92) + '%';
-            p.style.top = Math.min(Math.max(cY + (Math.random() * 8 - 4), 8), 92) + '%';
-        });
     }
 </script>
 {% endblock %}
