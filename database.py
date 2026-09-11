@@ -36,8 +36,10 @@ def init_db(conn):
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS players (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shirt_number INTEGER NOT NULL,
             name TEXT NOT NULL,
             position TEXT NOT NULL,
+            role_type TEXT DEFAULT 'STARTER',
             age INTEGER,
             pace INTEGER DEFAULT 70,
             finishing INTEGER DEFAULT 70,
@@ -64,15 +66,15 @@ def init_db(conn):
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', NATIONAL_TEAMS + CLUB_TEAMS)
 
-    # Seed Managers & 23-Man Full Roster
     cursor.execute("SELECT id, name, rating FROM teams")
     all_teams = cursor.fetchall()
     
-    positions_23 = [
-        'GK', 'GK', 'GK',
-        'RB', 'RB', 'LB', 'LB', 'CB', 'CB', 'CB', 'CB',
-        'CDM', 'CDM', 'CM', 'CM', 'CAM', 'CAM',
-        'RW', 'RW', 'LW', 'LW', 'ST', 'ST'
+    # Standard 23-Man Squad Positions (1-11 Starters, 12-23 Subs)
+    squad_23_positions = [
+        ('GK', 'STARTER'), ('RB', 'STARTER'), ('CB', 'STARTER'), ('CB', 'STARTER'), ('LB', 'STARTER'),
+        ('CDM', 'STARTER'), ('CM', 'STARTER'), ('CAM', 'STARTER'), ('RW', 'STARTER'), ('ST', 'STARTER'), ('LW', 'STARTER'),
+        ('GK', 'SUB'), ('RB', 'SUB'), ('LB', 'SUB'), ('CB', 'SUB'), ('CDM', 'SUB'), ('CM', 'SUB'),
+        ('CAM', 'SUB'), ('RW', 'SUB'), ('LW', 'SUB'), ('ST', 'SUB'), ('ST', 'SUB'), ('GK', 'SUB')
     ]
 
     for team in all_teams:
@@ -83,26 +85,29 @@ def init_db(conn):
         cursor.execute("INSERT INTO managers (name, tactical_style, in_game_reading, team_id) VALUES (?, ?, ?, ?)",
                        (m_info[0], m_info[1], random.randint(78, 96), t_id))
 
-        # Add Known Star Players
+        # Add 23 Squad Players numbered 1 to 23
         existing_stars = STAR_PLAYERS.get(t_name, [])
-        for s_name, s_pos in existing_stars:
-            cursor.execute('''
-                INSERT INTO players (name, position, age, pace, finishing, vision, stamina, team_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (s_name, s_pos, random.randint(20, 33), min(t_rating+3, 99), min(t_rating+3, 99), min(t_rating+3, 99), 100, t_id))
+        star_idx = 0
 
-        # Generate remaining squad members up to 23 players
-        needed_count = 23 - len(existing_stars)
-        for i in range(needed_count):
-            pos = positions_23[i % len(positions_23)]
-            p_name = f"{t_name} Squad No.{i + len(existing_stars) + 1}"
-            cursor.execute('''
-                INSERT INTO players (name, position, age, pace, finishing, vision, stamina, team_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (p_name, pos, random.randint(18, 34), max(50, min(99, t_rating + random.randint(-6, 4))),
-                  max(50, min(99, t_rating + random.randint(-6, 4))), max(50, min(99, t_rating + random.randint(-6, 4))), 100, t_id))
+        for number in range(1, 24):
+            pos, role = squad_23_positions[number - 1]
+            
+            # Use star player if available for matching position/slot
+            if star_idx < len(existing_stars):
+                p_name = existing_stars[star_idx][0]
+                pos = existing_stars[star_idx][1]
+                star_idx += 1
+            else:
+                p_name = f"Player #{number} ({pos})"
 
-    # Seed Trophies
+            cursor.execute('''
+                INSERT INTO players (shirt_number, name, position, role_type, age, pace, finishing, vision, stamina, team_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (number, p_name, pos, role, random.randint(18, 34),
+                  max(50, min(99, t_rating + random.randint(-5, 5))),
+                  max(50, min(99, t_rating + random.randint(-5, 5))),
+                  max(50, min(99, t_rating + random.randint(-5, 5))), 100, t_id))
+
     cursor.executemany('''
         INSERT INTO trophies_history (tournament_name, year, champion_team, runner_up, score)
         VALUES (?, ?, ?, ?, ?)
