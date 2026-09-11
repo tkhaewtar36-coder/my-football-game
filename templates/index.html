@@ -364,7 +364,7 @@
         }, 1000);
     }
 
-    function simulatePlayByPlayAction(homeName, awayName) {
+function simulatePlayByPlayAction(homeName, awayName) {
         let isHomeAction = Math.random() > 0.48;
         let activeTeam = isHomeAction ? homeName : awayName;
         let activeSquad = isHomeAction ? homePlayersData : awayPlayersData;
@@ -394,7 +394,7 @@
                 passer = starters[Math.floor(Math.random() * starters.length)];
             }
 
-            let hasAssist = Math.random() > 0.15; // 85% Chance of Assist
+            let hasAssist = Math.random() > 0.15;
 
             if (isHomeAction) { 
                 homeGoals++; stats.homeShots++; stats.homeOnTarget++; 
@@ -411,7 +411,7 @@
                 addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${p1.shirt_number} ${p1.name} (${activeTeam}) โซโล่เดี่ยวหลบกองหลังก่อนปั่นด้วยขวาเข้าเสาไกล! (ทำประตูด้วยตัวเอง)`);
                 addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> #${p1.shirt_number} ${p1.name} (${activeTeam}) <span style="color:#aaa;">(Solo Goal)</span>`);
             }
-        }
+        } else if (rand < 0.006) {
             // YELLOW CARD
             if (isHomeAction) { stats.awayYellows++; stats.homeFreeKicks++; stats.awayFouls++; }
             else { stats.homeYellows++; stats.awayFreeKicks++; stats.homeFouls++; }
