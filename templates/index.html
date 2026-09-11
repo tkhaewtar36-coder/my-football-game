@@ -55,38 +55,49 @@
 </style>
 
 <div class="header-title">
-    <h1>⚽ Match Center & Live Statistics</h1>
-    <p>ระบบพากย์บอลสด สถิติการครองบอล ใบเหลือง/แดง ไทม์ไลน์ 90 นาที และเปอร์เซ็นต์โอกาสชนะ/เสนอ/แพ้</p>
+    <h1>⚽ Match Center & Custom Rules Engine</h1>
+    <p>ระบบกำหนดกฎกติกาการแข่งขัน (ต่อเวลา/จุดโทษ) สถิติ และพากย์บอลสดเจาะจงรายบุคคล</p>
 </div>
 
 <div class="setup-box">
-    <label><b>รายการ:</b></label>
-    <select id="tourneyType" onchange="filterTeamsByLeague()">
-        <option value="ALL">🏆 ทุกรายการ</option>
-        <option value="FIFA World Cup">🌍 FIFA World Cup</option>
-        <option value="UEFA Euro">🇪🇺 UEFA Euro</option>
-        <option value="AFC Asian Cup">🌏 AFC Asian Cup</option>
-        <option value="Thai League 1">🇹🇭 Thai League 1</option>
-        <option value="J1 League">🇯🇵 J1 League</option>
-        <option value="Premier League">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
-        <option value="La Liga">🇪🇸 La Liga</option>
-    </select>
+    <div style="margin-bottom: 10px;">
+        <label><b>รายการ:</b></label>
+        <select id="tourneyType" onchange="filterTeamsByLeague()">
+            <option value="ALL">🏆 ทุกรายการ</option>
+            <option value="FIFA World Cup">🌍 FIFA World Cup</option>
+            <option value="UEFA Euro">🇪🇺 UEFA Euro</option>
+            <option value="AFC Asian Cup">🌏 AFC Asian Cup</option>
+            <option value="Thai League 1">🇹🇭 Thai League 1</option>
+            <option value="J1 League">🇯🇵 J1 League</option>
+            <option value="Premier League">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
+            <option value="La Liga">🇪🇸 La Liga</option>
+        </select>
 
-    <label><b>ทีมเหย้า:</b></label>
-    <select id="homeTeam" onchange="loadRosters()">
-        {% for t in teams %}
-        <option value="{{ t['id'] }}" data-league="{{ t['league'] }}" data-rating="{{ t['rating'] }}">{{ t['name'] }} ({{ t['league'] }})</option>
-        {% endfor %}
-    </select>
+        <label><b>กติกาเมื่อเสมอกัน:</b></label>
+        <select id="ruleMode">
+            <option value="NONE">⏱️ ไม่มีต่อเวลา / จุดโทษ (จบใน 90 นาที)</option>
+            <option value="EXTRA_AND_PEN">⚽ ต่อเวลาพิเศษ 30 นาที + ดวลจุดโทษ</option>
+            <option value="PENALTY_ONLY">🥅 ดวลจุดโทษตัดสินทันที (ไม่มีต่อเวลา)</option>
+        </select>
+    </div>
 
-    <label><b>ทีมเยือน:</b></label>
-    <select id="awayTeam" onchange="loadRosters()">
-        {% for t in teams %}
-        <option value="{{ t['id'] }}" data-league="{{ t['league'] }}" data-rating="{{ t['rating'] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t['name'] }} ({{ t['league'] }})</option>
-        {% endfor %}
-    </select>
+    <div>
+        <label><b>ทีมเหย้า:</b></label>
+        <select id="homeTeam" onchange="loadRosters()">
+            {% for t in teams %}
+            <option value="{{ t['id'] }}" data-league="{{ t['league'] }}" data-rating="{{ t['rating'] }}">{{ t['name'] }} ({{ t['league'] }})</option>
+            {% endfor %}
+        </select>
 
-    <button class="btn-start" onclick="startFullMatchEngine()">เริ่มจำลองการแข่งขัน</button>
+        <label><b>ทีมเยือน:</b></label>
+        <select id="awayTeam" onchange="loadRosters()">
+            {% for t in teams %}
+            <option value="{{ t['id'] }}" data-league="{{ t['league'] }}" data-rating="{{ t['rating'] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t['name'] }} ({{ t['league'] }})</option>
+            {% endfor %}
+        </select>
+
+        <button class="btn-start" onclick="startFullMatchEngine()">เริ่มจำลองการแข่งขัน</button>
+    </div>
 </div>
 
 <div class="match-score" id="scoreBoard">Home 0 - 0 Away</div>
@@ -359,12 +370,12 @@
 
             if (realSeconds >= TOTAL_REAL_SECONDS) {
                 clearInterval(matchInterval);
-                checkExtraTimeAndPenalties(homeName, awayName, tourney);
+                checkRulesAndEnding(homeName, awayName);
             }
         }, 1000);
     }
 
-function simulatePlayByPlayAction(homeName, awayName) {
+    function simulatePlayByPlayAction(homeName, awayName) {
         let isHomeAction = Math.random() > 0.48;
         let activeTeam = isHomeAction ? homeName : awayName;
         let activeSquad = isHomeAction ? homePlayersData : awayPlayersData;
@@ -388,7 +399,7 @@ function simulatePlayByPlayAction(homeName, awayName) {
         moveBallToPlayer(isHomeAction, p1.position);
 
         if (rand < 0.003) {
-            // GOAL Logic
+            // GOAL
             let passer = starters[Math.floor(Math.random() * starters.length)];
             while (passer.shirt_number === p1.shirt_number && starters.length > 1) {
                 passer = starters[Math.floor(Math.random() * starters.length)];
@@ -396,19 +407,16 @@ function simulatePlayByPlayAction(homeName, awayName) {
 
             let hasAssist = Math.random() > 0.15;
 
-            if (isHomeAction) { 
-                homeGoals++; stats.homeShots++; stats.homeOnTarget++; 
-            } else { 
-                awayGoals++; stats.awayShots++; stats.awayOnTarget++; 
-            }
+            if (isHomeAction) { homeGoals++; stats.homeShots++; stats.homeOnTarget++; }
+            else { awayGoals++; stats.awayShots++; stats.awayOnTarget++; }
 
             document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
 
             if (hasAssist) {
-                addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${passer.shirt_number} ${passer.name} จ่ายบอลทะลุช่องสุดสวยให้ #${p1.shirt_number} ${p1.name} (${activeTeam}) หลุดไปยิงผ่านมือผู้รักษาประตูเข้าไปอย่างงดงาม! (แอสซิสต์: #${passer.shirt_number} ${passer.name})`);
+                addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${passer.shirt_number} ${passer.name} จ่ายบอลทะลุช่องให้ #${p1.shirt_number} ${p1.name} (${activeTeam}) ยิงผ่านมือผู้รักษาประตูเข้าไป! (แอสซิสต์: #${passer.shirt_number} ${passer.name})`);
                 addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> #${p1.shirt_number} ${p1.name} (${activeTeam}) <span style="color:#aaa;">(🅰️ #${passer.shirt_number} ${passer.name})</span>`);
             } else {
-                addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${p1.shirt_number} ${p1.name} (${activeTeam}) โซโล่เดี่ยวหลบกองหลังก่อนปั่นด้วยขวาเข้าเสาไกล! (ทำประตูด้วยตัวเอง)`);
+                addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${p1.shirt_number} ${p1.name} (${activeTeam}) โซโล่เดี่ยวลากไปยิงซุกหน้าต่างเสาไกล! (ทำประตูด้วยตัวเอง)`);
                 addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> #${p1.shirt_number} ${p1.name} (${activeTeam}) <span style="color:#aaa;">(Solo Goal)</span>`);
             }
         } else if (rand < 0.006) {
@@ -441,25 +449,20 @@ function simulatePlayByPlayAction(homeName, awayName) {
             addCommentary(`[${inGameMin}'] 🟥 ใบแดง! #${oppP.shirt_number} ${oppP.name} โดนใบแดงไล่ออกจากสนามทันที!`);
             addTimeline(`${inGameMin}'`, `<span class="badge-red">ใบแดง</span> #${oppP.shirt_number} ${oppP.name}`);
         } else if (rand < 0.035) {
-            // DETAILED SUBSTITUTION LOGIC (การเปลี่ยนตัวแบบระบุคู่เข้า-ออก)
+            // SUBSTITUTION
             let subs = activeSquad.filter(p => p.role_type === 'SUB');
             if (starters.length > 0 && subs.length > 0) {
                 let pOut = starters[Math.floor(Math.random() * starters.length)];
                 let pIn = subs[Math.floor(Math.random() * subs.length)];
 
-                // สลับบทบาทในระบบ
                 pOut.role_type = 'SUBBED_OFF';
                 pIn.role_type = 'STARTER';
 
-                addCommentary(`[${inGameMin}'] 🔄 การเปลี่ยนตัวผู้เล่น (${activeTeam}): 🔴 ออก #${pOut.shirt_number} ${pOut.name} (${pOut.position}) ➔ 🟢 เข้า #${pIn.shirt_number} ${pIn.name} (${pIn.position})`);
+                addCommentary(`[${inGameMin}'] 🔄 เปลี่ยนตัว (${activeTeam}): 🔴 ออก #${pOut.shirt_number} ${pOut.name} ➔ 🟢 เข้า #${pIn.shirt_number} ${pIn.name}`);
                 addTimeline(`${inGameMin}'`, `🔄 เปลี่ยนตัว (${activeTeam}): 🔴 #${pOut.shirt_number} ${pOut.name} ➔ 🟢 #${pIn.shirt_number} ${pIn.name}`);
 
-                // อัปเดตตารางขุมกำลัง 23 คนบนหน้าจอ
-                if (isHomeAction) {
-                    renderRosterTable('homeRosterTable', homePlayersData);
-                } else {
-                    renderRosterTable('awayRosterTable', awayPlayersData);
-                }
+                if (isHomeAction) renderRosterTable('homeRosterTable', homePlayersData);
+                else renderRosterTable('awayRosterTable', awayPlayersData);
             }
         } else if (rand < 0.18) {
             // REGULAR PASS
@@ -488,25 +491,44 @@ function simulatePlayByPlayAction(homeName, awayName) {
         ball.style.top = posY + '%';
     }
 
-    function checkExtraTimeAndPenalties(homeName, awayName, tourney) {
-        if (homeGoals === awayGoals && (tourney.includes("Cup") || tourney.includes("Euro"))) {
-            addCommentary(`> [90'] จบ 90 นาที สกอร์เสมอ ${homeGoals}-${awayGoals} ต้องต่อเวลาพิเศษ 30 นาที!`);
-            if (Math.random() > 0.5) homeGoals++; else awayGoals++;
-            document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
+    function checkRulesAndEnding(homeName, awayName) {
+        const ruleMode = document.getElementById('ruleMode').value;
 
-            if (homeGoals === awayGoals) {
-                addCommentary(`> [120'] ยังคงเสมอ! ต้องตัดสินด้วยการดวลจุดโทษ...`);
-                let hPen = 4 + Math.floor(Math.random()*2), aPen = 3 + Math.floor(Math.random()*2);
-                if (hPen === aPen) hPen++;
-                addCommentary(`> 🥅 จบการดวลจุดโทษ: ${homeName} (${hPen}) - (${aPen}) ${awayName}`);
-                document.getElementById('matchStatus').innerText = `จบเกม (ชนะจุดโทษ ${hPen}-${aPen})`;
+        if (homeGoals === awayGoals) {
+            if (ruleMode === 'EXTRA_AND_PEN') {
+                addCommentary(`> [90'] จบ 90 นาที เสมอ ${homeGoals}-${awayGoals}! เข้าสู่ช่วงต่อเวลาพิเศษ 30 นาที...`);
+                if (Math.random() > 0.5) homeGoals++; else awayGoals++;
+                document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
+
+                if (homeGoals === awayGoals) {
+                    addCommentary(`> [120'] ยังคงเสมอ! ต้องตัดสินด้วยการดวลจุดโทษ...`);
+                    executePenaltyShootout(homeName, awayName);
+                } else {
+                    document.getElementById('matchStatus').innerText = `จบเกม (หลังต่อเวลาพิเศษ)`;
+                    addCommentary(`> 🏁 หมดเวลาต่อเวลาพิเศษ! ${homeName} ${homeGoals} - ${awayGoals} ${awayName}`);
+                }
+            } else if (ruleMode === 'PENALTY_ONLY') {
+                addCommentary(`> [90'] จบ 90 นาที เสมอ ${homeGoals}-${awayGoals}! ข้ามไปดวลจุดโทษทันที...`);
+                executePenaltyShootout(homeName, awayName);
             } else {
-                document.getElementById('matchStatus').innerText = `จบเกม (หลังต่อเวลาพิเศษ)`;
+                document.getElementById('matchStatus').innerText = `จบการแข่งขัน (เสมอใน 90 นาที)`;
+                addCommentary(`> 🏁 [90'] กรรมการเป่านกหวีดจบเกม! สกอร์เสมอ ${homeGoals} - ${awayGoals}`);
             }
         } else {
             document.getElementById('matchStatus').innerText = `จบการแข่งขัน 90 นาที`;
-            addCommentary(`> 🏁 [90'] กรรมการเป่านกหวีดหมดเวลาการแข่งขัน! สกอร์รวม: ${homeName} ${homeGoals} - ${awayGoals} ${awayName}`);
+            addCommentary(`> 🏁 [90'] กรรมการเป่านกหวีดจบเกม! สกอร์รวม: ${homeName} ${homeGoals} - ${awayGoals} ${awayName}`);
         }
+    }
+
+    function executePenaltyShootout(homeName, awayName) {
+        let hPen = 4 + Math.floor(Math.random() * 2);
+        let aPen = 3 + Math.floor(Math.random() * 2);
+        if (hPen === aPen) hPen++;
+
+        let penWinner = hPen > aPen ? homeName : awayName;
+        addCommentary(`> 🥅 ผลดวลจุดโทษ: ${homeName} (${hPen}) - (${aPen}) ${awayName}`);
+        addTimeline(`120'`, `<span class="badge-goal">จุดโทษ</span> ${penWinner} ชนะดวลจุดโทษ (${hPen}-${aPen})`);
+        document.getElementById('matchStatus').innerText = `จบเกม (${penWinner} ชนะจุดโทษ ${hPen}-${aPen})`;
     }
 
     function addCommentary(msg) {
