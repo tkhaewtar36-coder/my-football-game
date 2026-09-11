@@ -39,7 +39,6 @@
     .roster-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
     .roster-table th, .roster-table td { padding: 4px 6px; border-bottom: 1px solid #2a2a2a; text-align: left; }
     .roster-table th { color: #ff4500; }
-    .sub-title { color: #888; font-size: 11px; font-weight: bold; margin-top: 10px; }
 </style>
 
 <div class="header-title">
@@ -49,11 +48,13 @@
 
 <div class="setup-box">
     <label><b>รายการ:</b></label>
-    <select id="tourneyType">
+    <select id="tourneyType" onchange="filterTeamsByLeague()">
+        <option value="ALL">🏆 ทุกรายการ</option>
         <option value="FIFA World Cup">🌍 FIFA World Cup</option>
         <option value="UEFA Euro">🇪🇺 UEFA Euro</option>
         <option value="AFC Asian Cup">🌏 AFC Asian Cup</option>
         <option value="Thai League 1">🇹🇭 Thai League 1</option>
+        <option value="J1 League">🇯🇵 J1 League</option>
         <option value="Premier League">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
         <option value="La Liga">🇪🇸 La Liga</option>
     </select>
@@ -61,14 +62,14 @@
     <label><b>ทีมเหย้า:</b></label>
     <select id="homeTeam" onchange="loadRosters()">
         {% for t in teams %}
-        <option value="{{ t['id'] }}">{{ t['name'] }} ({{ t['league'] }})</option>
+        <option value="{{ t['id'] }}" data-league="{{ t['league'] }}">{{ t['name'] }} ({{ t['league'] }})</option>
         {% endfor %}
     </select>
 
     <label><b>ทีมเยือน:</b></label>
     <select id="awayTeam" onchange="loadRosters()">
         {% for t in teams %}
-        <option value="{{ t['id'] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t['name'] }} ({{ t['league'] }})</option>
+        <option value="{{ t['id'] }}" data-league="{{ t['league'] }}" {% if loop.index == 2 %}selected{% endif %}>{{ t['name'] }} ({{ t['league'] }})</option>
         {% endfor %}
     </select>
 
@@ -131,24 +132,70 @@
 
 <script>
     let matchInterval = null, realSeconds = 0, homeGoals = 0, awayGoals = 0;
-    let inGameMin = 0, currentPeriod = "FIRST_HALF";
+    let inGameMin = 0;
     const TOTAL_REAL_SECONDS = 25 * 60;
 
     window.onload = function() {
-        loadRosters();
+        filterTeamsByLeague();
     };
+
+    function filterTeamsByLeague() {
+        const selectedLeague = document.getElementById('tourneyType').value;
+        const homeSelect = document.getElementById('homeTeam');
+        const awaySelect = document.getElementById('awayTeam');
+
+        let visibleHomeOptions = [];
+        let visibleAwayOptions = [];
+
+        // กรองการแสดงผลใน Dropdown ทีมเหย้า และ ทีมเยือน
+        Array.from(homeSelect.options).forEach(opt => {
+            const league = opt.getAttribute('data-league') || '';
+            if (selectedLeague === 'ALL' || league.includes(selectedLeague)) {
+                opt.style.display = 'block';
+                visibleHomeOptions.push(opt);
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+
+        Array.from(awaySelect.options).forEach(opt => {
+            const league = opt.getAttribute('data-league') || '';
+            if (selectedLeague === 'ALL' || league.includes(selectedLeague)) {
+                opt.style.display = 'block';
+                visibleAwayOptions.push(opt);
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+
+        // เลือกทีมแรกที่แสดงผลให้เป็นทีมเหย้า และเลือกทีมที่สองให้เป็นทีมเยือน
+        if (visibleHomeOptions.length > 0) {
+            homeSelect.value = visibleHomeOptions[0].value;
+        }
+        if (visibleAwayOptions.length > 1) {
+            awaySelect.value = visibleAwayOptions[1].value;
+        } else if (visibleAwayOptions.length > 0) {
+            awaySelect.value = visibleAwayOptions[0].value;
+        }
+
+        loadRosters();
+    }
 
     function loadRosters() {
         const homeId = document.getElementById('homeTeam').value;
         const awayId = document.getElementById('awayTeam').value;
 
-        fetch(`/api/team-roster/${homeId}`)
-        .then(res => res.json())
-        .then(data => renderRosterTable('homeRosterTable', data));
+        if (homeId) {
+            fetch(`/api/team-roster/${homeId}`)
+            .then(res => res.json())
+            .then(data => renderRosterTable('homeRosterTable', data));
+        }
 
-        fetch(`/api/team-roster/${awayId}`)
-        .then(res => res.json())
-        .then(data => renderRosterTable('awayRosterTable', data));
+        if (awayId) {
+            fetch(`/api/team-roster/${awayId}`)
+            .then(res => res.json())
+            .then(data => renderRosterTable('awayRosterTable', data));
+        }
     }
 
     function renderRosterTable(tableId, players) {
@@ -172,9 +219,17 @@
         realSeconds = 0; homeGoals = 0; awayGoals = 0;
         document.getElementById('timelineList').innerHTML = '';
 
-        const homeName = document.getElementById('homeTeam').options[document.getElementById('homeTeam').selectedIndex].text.split(' (')[0];
-        const awayName = document.getElementById('awayTeam').options[document.getElementById('awayTeam').selectedIndex].text.split(' (')[0];
-        const tourney = document.getElementById('tourneyType').value;
+        const homeSelect = document.getElementById('homeTeam');
+        const awaySelect = document.getElementById('awayTeam');
+
+        if (homeSelect.selectedIndex === -1 || awaySelect.selectedIndex === -1) {
+            alert("กรุณาเลือกทีมเหย้าและทีมเยือนก่อนครับ");
+            return;
+        }
+
+        const homeName = homeSelect.options[homeSelect.selectedIndex].text.split(' (')[0];
+        const awayName = awaySelect.options[awaySelect.selectedIndex].text.split(' (')[0];
+        const tourney = document.getElementById('tourneyType').options[document.getElementById('tourneyType').selectedIndex].text;
 
         document.getElementById('scoreBoard').innerText = `${homeName} 0 - 0 ${awayName}`;
         document.getElementById('matchStatus').innerText = `กำลังแข่งขัน (${tourney})`;
@@ -202,27 +257,21 @@
         let activeTeam = Math.random() > 0.5 ? homeName : awayName;
 
         if (rand < 0.003) {
-            // GOAL
             if (activeTeam === homeName) homeGoals++; else awayGoals++;
             document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
             addCommentary(`[${inGameMin}'] ⚽ GOAL! ${activeTeam} ซัดประตูเข้าไปอย่างงดงาม!`);
             addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> ${activeTeam} ยิงประตู (${homeGoals}-${awayGoals})`);
         } else if (rand < 0.006) {
-            // YELLOW CARD
             addCommentary(`[${inGameMin}'] 🟨 กรรมการชูใบเหลืองให้ผู้เล่นของ ${activeTeam} จากจังหวะเข้าปะทะหนัก!`);
             addTimeline(`${inGameMin}'`, `<span class="badge-yellow">ใบเหลือง</span> ${activeTeam}`);
         } else if (rand < 0.007) {
-            // CORNER KICK
             addCommentary(`[${inGameMin}'] 🚩 ${activeTeam} ได้ลูกเตะมุม เปิดย้อยเข้าหากรอบเขตโทษ!`);
         } else if (rand < 0.008) {
-            // OFFSIDE
             addCommentary(`[${inGameMin}'] 🚩 ไลน์แมนยกธง! ${activeTeam} อยู่ในตำแหน่งล้ำหน้า`);
         } else if (rand < 0.009) {
-            // SUBSTITUTION
             addCommentary(`[${inGameMin}'] 🔄 ${activeTeam} ทำการเปลี่ยนตัวผู้เล่น ส่งตัวสำรองลงสนาม`);
             addTimeline(`${inGameMin}'`, `🔄 เปลี่ยนตัวผู้เล่น (${activeTeam})`);
         } else if (rand < 0.0093) {
-            // RED CARD
             addCommentary(`[${inGameMin}'] 🟥 ใบแดง! กรรมการไล่ผู้เล่น ${activeTeam} ออกจากสนามทันที!`);
             addTimeline(`${inGameMin}'`, `<span class="badge-red">ใบแดง</span> ${activeTeam}`);
         }
@@ -231,7 +280,6 @@
     function checkExtraTimeAndPenalties(homeName, awayName, tourney) {
         if (homeGoals === awayGoals && (tourney.includes("Cup") || tourney.includes("Euro"))) {
             addCommentary(`> [90'] จบ 90 นาที สกอร์เสมอ ${homeGoals}-${awayGoals} ต้องต่อเวลาพิเศษ 30 นาที!`);
-            // Extra Time Random Goal
             if (Math.random() > 0.5) homeGoals++; else awayGoals++;
             document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
 
