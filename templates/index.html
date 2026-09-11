@@ -388,13 +388,30 @@
         moveBallToPlayer(isHomeAction, p1.position);
 
         if (rand < 0.003) {
-            // GOAL
-            if (isHomeAction) { homeGoals++; stats.homeShots++; stats.homeOnTarget++; }
-            else { awayGoals++; stats.awayShots++; stats.awayOnTarget++; }
+            // GOAL Logic with Assist Identification
+            let passer = starters[Math.floor(Math.random() * starters.length)];
+            while (passer.shirt_number === p1.shirt_number && starters.length > 1) {
+                passer = starters[Math.floor(Math.random() * starters.length)];
+            }
+
+            let hasAssist = Math.random() > 0.15; // 85% Chance of Assist
+
+            if (isHomeAction) { 
+                homeGoals++; stats.homeShots++; stats.homeOnTarget++; 
+            } else { 
+                awayGoals++; stats.awayShots++; stats.awayOnTarget++; 
+            }
+
             document.getElementById('scoreBoard').innerText = `${homeName} ${homeGoals} - ${awayGoals} ${awayName}`;
-            addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${p1.shirt_number} ${p1.name} (${activeTeam}) ปั่นด้วยขวาเข้าเสาไกลยิงประตูได้อย่างสมบูรณ์แบบ!`);
-            addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> #${p1.shirt_number} ${p1.name} (${activeTeam})`);
-        } else if (rand < 0.006) {
+
+            if (hasAssist) {
+                addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${passer.shirt_number} ${passer.name} จ่ายบอลทะลุช่องสุดสวยให้ #${p1.shirt_number} ${p1.name} (${activeTeam}) หลุดไปยิงผ่านมือผู้รักษาประตูเข้าไปอย่างงดงาม! (แอสซิสต์: #${passer.shirt_number} ${passer.name})`);
+                addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> #${p1.shirt_number} ${p1.name} (${activeTeam}) <span style="color:#aaa;">(🅰️ #${passer.shirt_number} ${passer.name})</span>`);
+            } else {
+                addCommentary(`[${inGameMin}'] ⚽ GOAL!!! #${p1.shirt_number} ${p1.name} (${activeTeam}) โซโล่เดี่ยวหลบกองหลังก่อนปั่นด้วยขวาเข้าเสาไกล! (ทำประตูด้วยตัวเอง)`);
+                addTimeline(`${inGameMin}'`, `<span class="badge-goal">GOAL!</span> #${p1.shirt_number} ${p1.name} (${activeTeam}) <span style="color:#aaa;">(Solo Goal)</span>`);
+            }
+        }
             // YELLOW CARD
             if (isHomeAction) { stats.awayYellows++; stats.homeFreeKicks++; stats.awayFouls++; }
             else { stats.homeYellows++; stats.awayFreeKicks++; stats.homeFouls++; }
