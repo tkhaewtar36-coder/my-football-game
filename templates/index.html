@@ -388,7 +388,7 @@ function simulatePlayByPlayAction(homeName, awayName) {
         moveBallToPlayer(isHomeAction, p1.position);
 
         if (rand < 0.003) {
-            // GOAL Logic with Assist Identification
+            // GOAL Logic
             let passer = starters[Math.floor(Math.random() * starters.length)];
             while (passer.shirt_number === p1.shirt_number && starters.length > 1) {
                 passer = starters[Math.floor(Math.random() * starters.length)];
@@ -440,6 +440,27 @@ function simulatePlayByPlayAction(homeName, awayName) {
             if (isHomeAction) stats.awayReds++; else stats.homeReds++;
             addCommentary(`[${inGameMin}'] 🟥 ใบแดง! #${oppP.shirt_number} ${oppP.name} โดนใบแดงไล่ออกจากสนามทันที!`);
             addTimeline(`${inGameMin}'`, `<span class="badge-red">ใบแดง</span> #${oppP.shirt_number} ${oppP.name}`);
+        } else if (rand < 0.035) {
+            // DETAILED SUBSTITUTION LOGIC (การเปลี่ยนตัวแบบระบุคู่เข้า-ออก)
+            let subs = activeSquad.filter(p => p.role_type === 'SUB');
+            if (starters.length > 0 && subs.length > 0) {
+                let pOut = starters[Math.floor(Math.random() * starters.length)];
+                let pIn = subs[Math.floor(Math.random() * subs.length)];
+
+                // สลับบทบาทในระบบ
+                pOut.role_type = 'SUBBED_OFF';
+                pIn.role_type = 'STARTER';
+
+                addCommentary(`[${inGameMin}'] 🔄 การเปลี่ยนตัวผู้เล่น (${activeTeam}): 🔴 ออก #${pOut.shirt_number} ${pOut.name} (${pOut.position}) ➔ 🟢 เข้า #${pIn.shirt_number} ${pIn.name} (${pIn.position})`);
+                addTimeline(`${inGameMin}'`, `🔄 เปลี่ยนตัว (${activeTeam}): 🔴 #${pOut.shirt_number} ${pOut.name} ➔ 🟢 #${pIn.shirt_number} ${pIn.name}`);
+
+                // อัปเดตตารางขุมกำลัง 23 คนบนหน้าจอ
+                if (isHomeAction) {
+                    renderRosterTable('homeRosterTable', homePlayersData);
+                } else {
+                    renderRosterTable('awayRosterTable', awayPlayersData);
+                }
+            }
         } else if (rand < 0.18) {
             // REGULAR PASS
             const actions = [
