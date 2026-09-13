@@ -1,0 +1,53 @@
+import os
+
+teams_72 = [
+    # CONMEBOL (10)
+    ("Argentina", "CONMEBOL"), ("Brazil", "CONMEBOL"), ("Colombia", "CONMEBOL"), ("Uruguay", "CONMEBOL"),
+    ("Ecuador", "CONMEBOL"), ("Chile", "CONMEBOL"), ("Peru", "CONMEBOL"), ("Venezuela", "CONMEBOL"),
+    ("Paraguay", "CONMEBOL"), ("Bolivia", "CONMEBOL"),
+    # UEFA (20)
+    ("France", "UEFA"), ("Spain", "UEFA"), ("England", "UEFA"), ("Portugal", "UEFA"),
+    ("Germany", "UEFA"), ("Netherlands", "UEFA"), ("Italy", "UEFA"), ("Belgium", "UEFA"),
+    ("Croatia", "UEFA"), ("Switzerland", "UEFA"), ("Denmark", "UEFA"), ("Austria", "UEFA"),
+    ("Ukraine", "UEFA"), ("Turkey", "UEFA"), ("Poland", "UEFA"), ("Sweden", "UEFA"),
+    ("Norway", "UEFA"), ("Hungary", "UEFA"), ("Scotland", "UEFA"), ("Wales", "UEFA"),
+    # AFC (24)
+    ("Japan", "AFC"), ("South Korea", "AFC"), ("Iran", "AFC"), ("Australia", "AFC"),
+    ("Saudi Arabia", "AFC"), ("Qatar", "AFC"), ("Iraq", "AFC"), ("Uzbekistan", "AFC"),
+    ("Jordan", "AFC"), ("Thailand", "AFC"), ("UAE", "AFC"), ("Oman", "AFC"),
+    ("Bahrain", "AFC"), ("China", "AFC"), ("Vietnam", "AFC"), ("Syria", "AFC"),
+    ("Indonesia", "AFC"), ("North Korea", "AFC"), ("Tajikistan", "AFC"), ("Malaysia", "AFC"),
+    ("Kyrgyzstan", "AFC"), ("Kuwait", "AFC"), ("Philippines", "AFC"), ("Singapore", "AFC"),
+    # CAF (10)
+    ("Morocco", "CAF"), ("Senegal", "CAF"), ("Ivory Coast", "CAF"), ("Nigeria", "CAF"),
+    ("Egypt", "CAF"), ("Algeria", "CAF"), ("Cameroon", "CAF"), ("Mali", "CAF"),
+    ("Tunisia", "CAF"), ("Ghana", "CAF"),
+    # CONCACAF (6)
+    ("Mexico", "CONCACAF"), ("USA", "CONCACAF"), ("Canada", "CONCACAF"),
+    ("Panama", "CONCACAF"), ("Costa Rica", "CONCACAF"), ("Jamaica", "CONCACAF"),
+    # OFC (2)
+    ("New Zealand", "OFC"), ("Fiji", "OFC")
+]
+
+squad_positions = [
+    ('GK', 'STARTER'), ('RB', 'STARTER'), ('CB', 'STARTER'), ('CB', 'STARTER'), ('LB', 'STARTER'),
+    ('CDM', 'STARTER'), ('CM', 'STARTER'), ('CAM', 'STARTER'), ('RW', 'STARTER'), ('ST', 'STARTER'), ('LW', 'STARTER'),
+    ('GK', 'SUB'), ('RB', 'SUB'), ('LB', 'SUB'), ('CB', 'SUB'), ('CDM', 'SUB'), ('CM', 'SUB'),
+    ('CAM', 'SUB'), ('RW', 'SUB'), ('LW', 'SUB'), ('ST', 'SUB'), ('ST', 'SUB'), ('GK', 'SUB')
+]
+
+with open('national_teams_squads.txt', 'w', encoding='utf-8') as f:
+    f.write("=====================================================\n")
+    f.write("    FIFA WORLD CUP 72 NATIONAL TEAMS SQUAD LIST      \n")
+    f.write("=====================================================\n\n")
+
+    for team_name, confed in teams_72:
+        f.write(f"-----------------------------------------------------\n")
+        f.write(f"TEAM: {team_name.upper()} [{confed}]\n")
+        f.write(f"-----------------------------------------------------\n")
+        for num in range(1, 24):
+            pos, role = squad_positions[num - 1]
+            f.write(f"#{num:02d} | Pos: {pos:<4} | Role: {role:<7} | Player_{team_name.replace(' ', '_')}_{num:02d}\n")
+        f.write("\n")
+
+print("สร้างไฟล์ national_teams_squads.txt สำเร็จเรียบร้อยแล้ว!")
