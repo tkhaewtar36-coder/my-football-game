@@ -78,3 +78,47 @@ def record_match():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+import random
+import sqlite3
+from flask import jsonify, render_template
+
+@app.route('/api/draw-qualifiers-live')
+def api_draw_qualifiers_live():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, confederation, rating, fifa_ranking FROM teams WHERE type = 'National'")
+    teams = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    # 1. จัดกลุ่มแยกทวีป
+    confeds = {'UEFA': [], 'CONMEBOL': [], 'AFC': [], 'CAF': [], 'CONCACAF': [], 'OFC': []}
+    for t in teams:
+        c = t.get('confederation') or 'UEFA'
+        if c in confeds:
+            confeds[c].append(t)
+        else:
+            confeds['UEFA'].append(t)
+
+    # 2. จำลองรอบคัดเลือกทวีป (สุ่มแบบอิสระ ไม่ล็อกประเทศ)
+    slots = {'UEFA': 13, 'CONMEBOL': 5, 'AFC': 6, 'CAF': 4, 'CONCACAF': 3, 'OFC': 1}
+    qualified_32 = []
+    qualifiers_summary = {}
+
+    for c_name, quota in slots.items():
+        team_list = confeds[c_name]
+        # คำนวณด้วยค่าสุ่มแบบมหาศาล เพื่อให้ทีมเล็กมีโอกาสพลิกล็อกได้จริง
+        for t in team_list:
+            t['score'] = (t['rating'] * 0.3) + (random.random() * 70)
+        
+        team_list.sort(key=lambda x: x['score'], reverse=True)
+        passed = team_list[:quota]
+        qualified_32.extend(passed)
+        qualifiers_summary[c_name] = team_list
+
+    # 3. สุ่มลำดับ 32 ทีมเพื่อนำไปเข้าลูกหมุนจับฉลากเข้า Group A-H
+    random.shuffle(qualified_32)
+
+    return jsonify({
+        'qualifiers_summary': qualifiers_summary,
+        'qualified_32': qualified_32
+    })
