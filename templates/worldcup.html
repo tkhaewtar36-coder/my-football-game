@@ -156,7 +156,129 @@
         document.getElementById('spinnerPhase2').innerHTML = "พร้อมหมุนจับฉลากรอบ 32 ทีมสุดท้ายแล้ว!";
     }
 
-    // === PHASE 2: WORLD CUP FINAL DRAW (32 TEAMS A-H) ===
+  <!-- PHASE 2 SECTION -->
+    <div class="phase-box">
+        <div class="phase-header">
+            <span>🏆 ช่วงที่ 2: การจับฉลากฟุตบอลโลกรอบสุดท้าย (32 ทีมสุดท้าย Group A - H)</span>
+            <button class="btn-phase2" id="btnPhase2" onclick="drawPhase2WorldCup()" disabled style="opacity: 0.4;">🎰 2. หมุนจับฉลากแบ่งกลุ่มรอบ 32 ทีม</button>
+        </div>
+
+        <div class="slot-box" style="border-color: #00e676;">
+            <div id="spinnerPhase2" class="slot-display" style="color: #00e676;">ต้องผ่านการจับฉลากช่วงที่ 1 ก่อน</div>
+        </div>
+
+        <!-- 🌟 ช่องแสดงรายชื่อ 32 ทีมที่ผ่านเข้ารอบ 🌟 -->
+        <div style="background: #111; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+            <div style="color: #00e676; font-size: 13px; font-weight: bold; margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 4px;">
+                📋 รายชื่อ 32 ทีมชาติที่ได้ตั๋วผ่านเข้ารอบสุดท้าย (Qualified Teams Pool)
+            </div>
+            <div id="qualifiedTeamsPool" style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 30px; font-size: 11px; color: #aaa;">
+                <i>(รายชื่อทีมจะปรากฏขึ้นที่นี่เมื่อจับฉลากช่วงที่ 1 เสร็จสิ้น)</i>
+            </div>
+        </div>
+
+        <div class="final-grid" id="finalGroupsDisplayContainer"></div>
+    </div>
+</div>
+
+<script>
+    const finalGroupLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const quotaMap = { 'UEFA': 13, 'CONMEBOL': 5, 'AFC': 6, 'CAF': 4, 'CONCACAF': 3, 'OFC': 1 };
+    
+    let qualified32Teams = [];
+
+    window.onload = function() { initEmptyFinalGroups(); };
+
+    function initEmptyFinalGroups() {
+        const container = document.getElementById('finalGroupsDisplayContainer');
+        container.innerHTML = '';
+        finalGroupLetters.forEach(g => {
+            container.innerHTML += `
+                <div class="final-card">
+                    <h4 class="final-card-title">📌 Group ${g}</h4>
+                    <div id="final-group-${g}"><div style="color:#555; font-size:12px; text-align:center; padding:15px;">รอการจับฉลาก...</div></div>
+                </div>
+            `;
+        });
+    }
+
+    function drawPhase1Qualifiers() {
+        let allTeams = getAll72Teams();
+        let spinner = document.getElementById('spinnerPhase1');
+        spinner.innerHTML = "⚽ 🎰 กำลังหมุนสุ่มจับฉลาก 72 ประเทศลงกลุ่มคัดเลือกประจำทวีป...";
+
+        setTimeout(() => {
+            executeQualifiersDraw(allTeams);
+        }, 500);
+    }
+
+    function executeQualifiersDraw(allTeams) {
+        let confedMap = { 'UEFA': [], 'CONMEBOL': [], 'AFC': [], 'CAF': [], 'CONCACAF': [], 'OFC': [] };
+        allTeams.forEach(t => {
+            let c = t.confederation || 'UEFA';
+            if (confedMap[c]) confedMap[c].push(t);
+            else confedMap['UEFA'].push(t);
+        });
+
+        const display = document.getElementById('qualifiersDisplayContainer');
+        display.innerHTML = '';
+        qualified32Teams = [];
+
+        Object.keys(quotaMap).forEach(cName => {
+            let list = confedMap[cName] || [];
+            shuffle(list);
+
+            let numGroups = cName === 'AFC' || cName === 'UEFA' ? 4 : (cName === 'OFC' ? 1 : 2);
+            let groupDict = {};
+            for (let i = 0; i < numGroups; i++) groupDict[`Group ${String.fromCharCode(65 + i)}`] = [];
+
+            list.forEach((t, idx) => {
+                groupDict[`Group ${String.fromCharCode(65 + (idx % numGroups))}`].push(t);
+            });
+
+            let sortedByLuck = [...list].sort((a, b) => ((b.rating * 0.4) + Math.random()*60) - ((a.rating * 0.4) + Math.random()*60));
+            let passed = sortedByLuck.slice(0, quotaMap[cName]);
+            qualified32Teams.push(...passed);
+
+            let html = `
+                <div class="confed-block">
+                    <div class="confed-title">🌏 โซน ${cName} (${list.length} ประเทศ — โควตารอบสุดท้าย ${quotaMap[cName]} ทีม)</div>
+                    <div class="qual-grid">
+            `;
+
+            Object.keys(groupDict).forEach(gName => {
+                html += `<div class="qual-card"><div class="qual-card-title">📌 ${gName}</div>`;
+                groupDict[gName].forEach((t, idx) => {
+                    let isQualified = passed.some(p => p.name === t.name);
+                    let badge = isQualified ? '<span class="badge-q">ผ่าน</span>' : '';
+                    html += `<div class="team-row"><span>${idx + 1}. ${t.name}</span>${badge}</div>`;
+                });
+                html += `</div>`;
+            });
+
+            html += `</div></div>`;
+            display.innerHTML += html;
+        });
+
+        // 🌟 อัปเดตรายชื่อ 32 ทีมลงในช่อง Qualified Teams Pool 🌟
+        const poolDisplay = document.getElementById('qualifiedTeamsPool');
+        poolDisplay.innerHTML = '';
+        qualified32Teams.forEach((t, idx) => {
+            poolDisplay.innerHTML += `
+                <span style="background: #222; border: 1px solid #00e676; color: #fff; padding: 3px 8px; border-radius: 4px;">
+                    <b>${idx + 1}.</b> ${t.name} <small style="color:#ffb703;">(${t.confederation})</small>
+                </span>
+            `;
+        });
+
+        document.getElementById('spinnerPhase1').innerHTML = "✅ จับฉลากกลุ่มคัดเลือก 72 ทีมเสร็จสมบูรณ์!";
+        
+        const btn2 = document.getElementById('btnPhase2');
+        btn2.disabled = false;
+        btn2.style.opacity = "1";
+        document.getElementById('spinnerPhase2').innerHTML = "พร้อมหมุนจับฉลากรอบ 32 ทีมสุดท้ายแล้ว!";
+    }
+
     function drawPhase2WorldCup() {
         if (qualified32Teams.length === 0) return;
         initEmptyFinalGroups();
@@ -262,4 +384,5 @@
         ];
     }
 </script>
+{% endblock %}
 {% endblock %}
