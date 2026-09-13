@@ -6,58 +6,63 @@
     .wc-title { color: #fff; font-size: 24px; margin-bottom: 5px; }
     .wc-subtitle { color: #aaa; font-size: 13px; margin-bottom: 20px; }
     
-    .btn-action { background: #ff5500; color: #fff; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; margin: 5px; font-size: 14px; box-shadow: 0 4px 10px rgba(255,85,0,0.3); }
-    .btn-spin { background: #00e676; color: #000; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; margin: 5px; font-size: 14px; box-shadow: 0 4px 10px rgba(0,230,118,0.3); }
-    .btn-action:hover, .btn-spin:hover { transform: scale(1.03); }
+    .btn-phase1 { background: #ff5500; color: #fff; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; font-size: 14px; box-shadow: 0 4px 10px rgba(255,85,0,0.3); }
+    .btn-phase2 { background: #00e676; color: #000; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; font-size: 14px; box-shadow: 0 4px 10px rgba(0,230,118,0.3); }
 
-    .slot-box { background: #000; border: 2px solid #ff5500; border-radius: 12px; padding: 15px; margin: 20px auto; max-width: 650px; box-shadow: 0 0 15px rgba(255,85,0,0.2); }
-    .slot-display { font-size: 22px; font-weight: bold; color: #ffdd00; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+    .slot-box { background: #000; border: 2px solid #ff5500; border-radius: 12px; padding: 15px; margin: 15px auto; max-width: 650px; }
+    .slot-display { font-size: 20px; font-weight: bold; color: #ffdd00; min-height: 40px; display: flex; align-items: center; justify-content: center; }
 
-    .section-box { background: #181818; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 25px; text-align: left; }
-    .section-header { color: #ff5500; font-size: 16px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 0; }
+    .phase-box { background: #181818; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 25px; text-align: left; }
+    .phase-header { color: #ff5500; font-size: 16px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 0; display: flex; justify-content: space-between; align-items: center; }
 
     .confed-block { background: #222; border: 1px solid #3d3d3d; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
-    .confed-title { color: #00ffcc; font-size: 15px; font-weight: bold; border-bottom: 1px dashed #444; padding-bottom: 5px; margin-bottom: 10px; }
+    .confed-title { color: #00ffcc; font-size: 14px; font-weight: bold; border-bottom: 1px dashed #444; padding-bottom: 5px; margin-bottom: 10px; }
 
-    .qual-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-    .qual-card { background: #181818; border: 1px solid #333; border-radius: 6px; padding: 10px; }
-    .qual-card-title { color: #ffb703; font-size: 13px; font-weight: bold; margin-top: 0; border-bottom: 1px solid #222; padding-bottom: 3px; }
+    .qual-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+    .qual-card { background: #181818; border: 1px solid #333; border-radius: 6px; padding: 8px; }
+    .qual-card-title { color: #ffb703; font-size: 12px; font-weight: bold; margin-top: 0; border-bottom: 1px solid #222; padding-bottom: 3px; }
 
     .final-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
     .final-card { background: #1f1f1f; border: 1px solid #333; border-radius: 8px; padding: 12px; }
     .final-card-title { color: #ff5500; font-size: 15px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 0; }
 
-    .team-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #2a2a2a; font-size: 12px; color: #eee; }
-    .badge-q { background: #28a745; color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
-    .badge-confed { background: #333; color: #ffb703; font-size: 10px; padding: 2px 5px; border-radius: 3px; }
+    .team-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #2a2a2a; font-size: 12px; color: #eee; }
+    .badge-q { background: #28a745; color: #fff; font-size: 9px; padding: 1px 4px; border-radius: 3px; font-weight: bold; }
+    .badge-confed { background: #333; color: #ffb703; font-size: 9px; padding: 2px 5px; border-radius: 3px; }
 </style>
 
 <div class="wc-container">
-    <h1 class="wc-title">🌍 FIFA World Cup 72 Teams Qualifiers & Group Stage Engine</h1>
-    <p class="wc-subtitle">ระบบหมุนจับฉลากรอบคัดเลือก 72 ประเทศแยกตามทวีป ก่อนคัดทีมเข้ารอบไปหมุนจับฉลากกลุ่ม A-H</p>
+    <h1 class="wc-title">🌍 FIFA World Cup 2-Stage Draw Simulator</h1>
+    <p class="wc-subtitle">ระบบแยกการจับฉลากอิสระ 2 ช่วง: รอบคัดเลือกทวีป (72 ทีม) ➔ รอบสุดท้าย (32 ทีม Group A-H)</p>
 
-    <div>
-        <button class="btn-action" onclick="spinQualifiersDraw()">🎰 1. หมุนจับฉลากแบ่งกลุ่มรอบคัดเลือก (72 ทีม 6 ทวีป)</button>
-        <button class="btn-spin" id="btnFinalDraw" onclick="spinWorldCupFinalDraw()" disabled style="opacity: 0.5;">🎰 2. หมุนจับฉลากรอบ 32 ทีมสุดท้าย (Group A-H)</button>
-    </div>
+    <!-- PHASE 1 SECTION -->
+    <div class="phase-box">
+        <div class="phase-header">
+            <span>⚽ ช่วงที่ 1: การจับฉลากแบ่งกลุ่มรอบคัดเลือกประจำทวีป (72 ทีมชาติ)</span>
+            <button class="btn-phase1" onclick="drawPhase1Qualifiers()">🎲 1. หมุนจับฉลากกลุ่มคัดเลือกทวีป</button>
+        </div>
+        
+        <div class="slot-box">
+            <div id="spinnerPhase1" class="slot-display">กดปุ่มสีส้มเพื่อเริ่มสุ่มแบ่งกลุ่มรอบคัดเลือก 72 ทีม</div>
+        </div>
 
-    <div class="slot-box">
-        <div style="font-size: 11px; color: #aaa; margin-bottom: 5px;">🎰 วงล้อหมุนสุ่มจับฉลาก (LIVE DRAW SPINNER)</div>
-        <div id="spiningBall" class="slot-display">กดปุ่ม "1. หมุนจับฉลากแบ่งกลุ่มรอบคัดเลือก" เพื่อเริ่มการจับฉลาก 72 ทีม</div>
-    </div>
-
-    <!-- STEP 1: CONTINENTAL QUALIFIERS GROUPS -->
-    <div class="section-box">
-        <h3 class="section-header">🌏 ผลการจับฉลากแบ่งกลุ่มรอบคัดเลือกของแต่ละทวีป (Continental Qualifiers)</h3>
-        <div id="qualifiersDisplay">
-            <div style="color: #666; font-size: 13px; padding: 10px;">รอกดสุ่มจับฉลากแบ่งกลุ่ม 72 ทีมชาติ...</div>
+        <div id="qualifiersDisplayContainer">
+            <div style="color: #666; font-size: 13px; padding: 10px;">รอการจับฉลากรอบคัดเลือก...</div>
         </div>
     </div>
 
-    <!-- STEP 2: WORLD CUP FINAL GROUPS -->
-    <div class="section-box">
-        <h3 class="section-header">🏆 ผลการจับฉลากแบ่งกลุ่มรอบสุดท้าย 32 ทีม (World Cup Group A - H)</h3>
-        <div class="final-grid" id="finalGroupsDisplay"></div>
+    <!-- PHASE 2 SECTION -->
+    <div class="phase-box">
+        <div class="phase-header">
+            <span>🏆 ช่วงที่ 2: การจับฉลากฟุตบอลโลกรอบสุดท้าย (32 ทีมสุดท้าย Group A - H)</span>
+            <button class="btn-phase2" id="btnPhase2" onclick="drawPhase2WorldCup()" disabled style="opacity: 0.4;">🎰 2. หมุนจับฉลากแบ่งกลุ่มรอบ 32 ทีม</button>
+        </div>
+
+        <div class="slot-box" style="border-color: #00e676;">
+            <div id="spinnerPhase2" class="slot-display" style="color: #00e676;">ต้องผ่านการจับฉลากช่วงที่ 1 ก่อน</div>
+        </div>
+
+        <div class="final-grid" id="finalGroupsDisplayContainer"></div>
     </div>
 </div>
 
@@ -70,32 +75,30 @@
     window.onload = function() { initEmptyFinalGroups(); };
 
     function initEmptyFinalGroups() {
-        const container = document.getElementById('finalGroupsDisplay');
+        const container = document.getElementById('finalGroupsDisplayContainer');
         container.innerHTML = '';
         finalGroupLetters.forEach(g => {
             container.innerHTML += `
                 <div class="final-card">
                     <h4 class="final-card-title">📌 Group ${g}</h4>
-                    <div id="final-group-${g}"><div style="color:#555; font-size:12px; text-align:center; padding:15px;">รอจับฉลาก...</div></div>
+                    <div id="final-group-${g}"><div style="color:#555; font-size:12px; text-align:center; padding:15px;">รอการจับฉลาก...</div></div>
                 </div>
             `;
         });
     }
 
-    // 1. หมุนจับฉลากแบ่งกลุ่มรอบคัดเลือกของแต่ละทวีป (72 ทีม)
-    function spinQualifiersDraw() {
+    // === PHASE 1: QUALIFIERS DRAW (72 TEAMS) ===
+    function drawPhase1Qualifiers() {
         let allTeams = getAll72Teams();
-        
-        let spinner = document.getElementById('spiningBall');
+        let spinner = document.getElementById('spinnerPhase1');
         spinner.innerHTML = "⚽ 🎰 กำลังหมุนสุ่มจับฉลาก 72 ประเทศลงกลุ่มคัดเลือกประจำทวีป...";
 
         setTimeout(() => {
             executeQualifiersDraw(allTeams);
-        }, 600);
+        }, 500);
     }
 
     function executeQualifiersDraw(allTeams) {
-        // แยกทีมตามทวีป
         let confedMap = { 'UEFA': [], 'CONMEBOL': [], 'AFC': [], 'CAF': [], 'CONCACAF': [], 'OFC': [] };
         allTeams.forEach(t => {
             let c = t.confederation || 'UEFA';
@@ -103,7 +106,7 @@
             else confedMap['UEFA'].push(t);
         });
 
-        const display = document.getElementById('qualifiersDisplay');
+        const display = document.getElementById('qualifiersDisplayContainer');
         display.innerHTML = '';
         qualified32Teams = [];
 
@@ -111,31 +114,19 @@
             let list = confedMap[cName] || [];
             shuffle(list);
 
-            // คำนวณจำนวนกลุ่มคัดเลือกตามขนาดทวีป
-            let numGroups = 2;
-            if (cName === 'AFC') numGroups = 4;       // 24 ทีม -> 4 กลุ่ม (กลุ่มละ 6 ทีม)
-            else if (cName === 'UEFA') numGroups = 4;  // 20 ทีม -> 4 กลุ่ม (กลุ่มละ 5 ทีม)
-            else if (cName === 'OFC') numGroups = 1;   // 2 ทีม -> 1 กลุ่ม
-
+            let numGroups = cName === 'AFC' || cName === 'UEFA' ? 4 : (cName === 'OFC' ? 1 : 2);
             let groupDict = {};
             for (let i = 0; i < numGroups; i++) groupDict[`Group ${String.fromCharCode(65 + i)}`] = [];
 
             list.forEach((t, idx) => {
-                let gKey = `Group ${String.fromCharCode(65 + (idx % numGroups))}`;
-                groupDict[gKey].push(t);
+                groupDict[`Group ${String.fromCharCode(65 + (idx % numGroups))}`].push(t);
             });
 
-            // หาผู้ผ่านเข้ารอบตามโควตาจริง (ใช้ค่าพลัง + แต้มสุ่ม ไม่ล็อกผล)
-            let sortedByLuck = [...list].sort((a, b) => {
-                let scoreA = (a.rating * 0.4) + (Math.random() * 60);
-                let scoreB = (b.rating * 0.4) + (Math.random() * 60);
-                return scoreB - scoreA;
-            });
-            
+            // สุ่มทีมผ่านเข้ารอบตามโควตา
+            let sortedByLuck = [...list].sort((a, b) => ((b.rating * 0.4) + Math.random()*60) - ((a.rating * 0.4) + Math.random()*60));
             let passed = sortedByLuck.slice(0, quotaMap[cName]);
             qualified32Teams.push(...passed);
 
-            // แสดงตารางแบ่งกลุ่มคัดเลือก
             let html = `
                 <div class="confed-block">
                     <div class="confed-title">🌏 โซน ${cName} (${list.length} ประเทศ — โควตารอบสุดท้าย ${quotaMap[cName]} ทีม)</div>
@@ -146,13 +137,8 @@
                 html += `<div class="qual-card"><div class="qual-card-title">📌 ${gName}</div>`;
                 groupDict[gName].forEach((t, idx) => {
                     let isQualified = passed.some(p => p.name === t.name);
-                    let badge = isQualified ? '<span class="badge-q">เข้ารอบ</span>' : '';
-                    html += `
-                        <div class="team-row">
-                            <span>${idx + 1}. ${t.name}</span>
-                            ${badge}
-                        </div>
-                    `;
+                    let badge = isQualified ? '<span class="badge-q">ผ่าน</span>' : '';
+                    html += `<div class="team-row"><span>${idx + 1}. ${t.name}</span>${badge}</div>`;
                 });
                 html += `</div>`;
             });
@@ -161,26 +147,29 @@
             display.innerHTML += html;
         });
 
-        document.getElementById('spiningBall').innerHTML = "✅ จับฉลากรอบคัดเลือก 72 ทีมเสร็จสิ้น! โถ Pot พร้อมหมุนรอบ 32 ทีม";
-        const btn = document.getElementById('btnFinalDraw');
-        btn.disabled = false;
-        btn.style.opacity = "1";
+        document.getElementById('spinnerPhase1').innerHTML = "✅ จับฉลากกลุ่มคัดเลือก 72 ทีมเสร็จสมบูรณ์!";
+        
+        // ปลดล็อกปุ่มช่วงที่ 2
+        const btn2 = document.getElementById('btnPhase2');
+        btn2.disabled = false;
+        btn2.style.opacity = "1";
+        document.getElementById('spinnerPhase2').innerHTML = "พร้อมหมุนจับฉลากรอบ 32 ทีมสุดท้ายแล้ว!";
     }
 
-    // 2. หมุนวงล้อสุ่มจับฉลาก 32 ทีมลง Group A-H
-    function spinWorldCupFinalDraw() {
+    // === PHASE 2: WORLD CUP FINAL DRAW (32 TEAMS A-H) ===
+    function drawPhase2WorldCup() {
         if (qualified32Teams.length === 0) return;
         initEmptyFinalGroups();
 
         let shuffledFinalists = [...qualified32Teams];
         shuffle(shuffledFinalists);
 
-        let spinner = document.getElementById('spiningBall');
+        let spinner = document.getElementById('spinnerPhase2');
         let index = 0;
 
         function spinNext() {
             if (index >= shuffledFinalists.length) {
-                spinner.innerHTML = "🎉 การจับฉลากฟุตบอลโลกรอบสุดท้ายเสร็จสมบูรณ์ครบทั้ง 32 ทีม!";
+                spinner.innerHTML = "🎉 จับฉลากฟุตบอลโลกรอบสุดท้ายครบ 32 ทีมสมบูรณ์!";
                 return;
             }
 
@@ -189,16 +178,16 @@
 
             let timer = setInterval(() => {
                 let temp = shuffledFinalists[Math.floor(Math.random() * shuffledFinalists.length)];
-                spinner.innerHTML = `⚽ 🎰 กำลังหมุน: <span style="color:#ff5500;">${temp.name}</span> (${temp.confederation || 'UEFA'})`;
+                spinner.innerHTML = `⚽ 🎰 หมุนทีม: <span style="color:#00e676;">${temp.name}</span> (${temp.confederation || 'UEFA'})`;
                 rolls++;
 
-                if (rolls > 6) {
+                if (rolls > 5) {
                     clearInterval(timer);
                     
                     let groupLetter = finalGroupLetters[index % 8];
                     let listContainer = document.getElementById(`final-group-${groupLetter}`);
 
-                    if (listContainer.children[0] && listContainer.children[0].innerText.includes('รอจับฉลาก')) {
+                    if (listContainer.children[0] && listContainer.children[0].innerText.includes('รอการจับฉลาก')) {
                         listContainer.innerHTML = '';
                     }
 
@@ -209,11 +198,11 @@
                         </div>
                     `;
 
-                    spinner.innerHTML = `🎉 ออกแล้ว! <span style="color:#00e676;">${currentTeam.name}</span> ➔ เข้า Group ${groupLetter}`;
+                    spinner.innerHTML = `🎉 <span style="color:#00e676;">${currentTeam.name}</span> ➔ เข้าสู่ Group ${groupLetter}`;
                     index++;
-                    setTimeout(spinNext, 80);
+                    setTimeout(spinNext, 70);
                 }
-            }, 40);
+            }, 35);
         }
 
         spinNext();
@@ -226,92 +215,50 @@
         }
     }
 
-    // รายชื่อทีมชาติครบถ้วน 72 ประเทศ (72 Teams)
     function getAll72Teams() {
         return [
-            // --- CONMEBOL (10 Teams) ---
-            {name: 'Argentina', confederation: 'CONMEBOL', rating: 92},
-            {name: 'Brazil', confederation: 'CONMEBOL', rating: 90},
-            {name: 'Colombia', confederation: 'CONMEBOL', rating: 86},
-            {name: 'Uruguay', confederation: 'CONMEBOL', rating: 85},
-            {name: 'Ecuador', confederation: 'CONMEBOL', rating: 80},
-            {name: 'Chile', confederation: 'CONMEBOL', rating: 78},
-            {name: 'Peru', confederation: 'CONMEBOL', rating: 77},
-            {name: 'Venezuela', confederation: 'CONMEBOL', rating: 76},
-            {name: 'Paraguay', confederation: 'CONMEBOL', rating: 75},
-            {name: 'Bolivia', confederation: 'CONMEBOL', rating: 70},
-
-            // --- UEFA (20 Teams) ---
-            {name: 'France', confederation: 'UEFA', rating: 91},
-            {name: 'Spain', confederation: 'UEFA', rating: 90},
-            {name: 'England', confederation: 'UEFA', rating: 89},
-            {name: 'Portugal', confederation: 'UEFA', rating: 88},
-            {name: 'Germany', confederation: 'UEFA', rating: 88},
-            {name: 'Netherlands', confederation: 'UEFA', rating: 87},
-            {name: 'Italy', confederation: 'UEFA', rating: 86},
-            {name: 'Belgium', confederation: 'UEFA', rating: 86},
-            {name: 'Croatia', confederation: 'UEFA', rating: 84},
-            {name: 'Switzerland', confederation: 'UEFA', rating: 82},
-            {name: 'Denmark', confederation: 'UEFA', rating: 81},
-            {name: 'Austria', confederation: 'UEFA', rating: 80},
-            {name: 'Ukraine', confederation: 'UEFA', rating: 79},
-            {name: 'Turkey', confederation: 'UEFA', rating: 79},
-            {name: 'Poland', confederation: 'UEFA', rating: 78},
-            {name: 'Sweden', confederation: 'UEFA', rating: 78},
-            {name: 'Norway', confederation: 'UEFA', rating: 79},
-            {name: 'Hungary', confederation: 'UEFA', rating: 77},
-            {name: 'Scotland', confederation: 'UEFA', rating: 76},
-            {name: 'Wales', confederation: 'UEFA', rating: 76},
-
-            // --- AFC (24 Teams) ---
-            {name: 'Japan', confederation: 'AFC', rating: 85},
-            {name: 'South Korea', confederation: 'AFC', rating: 83},
-            {name: 'Iran', confederation: 'AFC', rating: 81},
-            {name: 'Australia', confederation: 'AFC', rating: 80},
-            {name: 'Saudi Arabia', confederation: 'AFC', rating: 78},
-            {name: 'Qatar', confederation: 'AFC', rating: 77},
-            {name: 'Iraq', confederation: 'AFC', rating: 75},
-            {name: 'Uzbekistan', confederation: 'AFC', rating: 74},
-            {name: 'Jordan', confederation: 'AFC', rating: 73},
-            {name: 'Thailand', confederation: 'AFC', rating: 73},
-            {name: 'UAE', confederation: 'AFC', rating: 72},
-            {name: 'Oman', confederation: 'AFC', rating: 71},
-            {name: 'Bahrain', confederation: 'AFC', rating: 70},
-            {name: 'China', confederation: 'AFC', rating: 69},
-            {name: 'Vietnam', confederation: 'AFC', rating: 69},
-            {name: 'Syria', confederation: 'AFC', rating: 68},
-            {name: 'Indonesia', confederation: 'AFC', rating: 68},
-            {name: 'North Korea', confederation: 'AFC', rating: 67},
-            {name: 'Tajikistan', confederation: 'AFC', rating: 67},
-            {name: 'Malaysia', confederation: 'AFC', rating: 67},
-            {name: 'Kyrgyzstan', confederation: 'AFC', rating: 66},
-            {name: 'Kuwait', confederation: 'AFC', rating: 65},
-            {name: 'Philippines', confederation: 'AFC', rating: 64},
-            {name: 'Singapore', confederation: 'AFC', rating: 62},
-
-            // --- CAF (10 Teams) ---
-            {name: 'Morocco', confederation: 'CAF', rating: 84},
-            {name: 'Senegal', confederation: 'CAF', rating: 83},
-            {name: 'Ivory Coast', confederation: 'CAF', rating: 82},
-            {name: 'Nigeria', confederation: 'CAF', rating: 81},
-            {name: 'Egypt', confederation: 'CAF', rating: 80},
-            {name: 'Algeria', confederation: 'CAF', rating: 79},
-            {name: 'Cameroon', confederation: 'CAF', rating: 77},
-            {name: 'Mali', confederation: 'CAF', rating: 76},
-            {name: 'Tunisia', confederation: 'CAF', rating: 76},
-            {name: 'Ghana', confederation: 'CAF', rating: 75},
-
-            // --- CONCACAF (6 Teams) ---
-            {name: 'Mexico', confederation: 'CONCACAF', rating: 82},
-            {name: 'USA', confederation: 'CONCACAF', rating: 81},
-            {name: 'Canada', confederation: 'CONCACAF', rating: 78},
-            {name: 'Panama', confederation: 'CONCACAF', rating: 75},
-            {name: 'Costa Rica', confederation: 'CONCACAF', rating: 74},
-            {name: 'Jamaica', confederation: 'CONCACAF', rating: 72},
-
-            // --- OFC (2 Teams) ---
-            {name: 'New Zealand', confederation: 'OFC', rating: 72},
-            {name: 'Fiji', confederation: 'OFC', rating: 58}
+            // CONMEBOL (10)
+            {name: 'Argentina', confederation: 'CONMEBOL', rating: 92}, {name: 'Brazil', confederation: 'CONMEBOL', rating: 90},
+            {name: 'Colombia', confederation: 'CONMEBOL', rating: 86}, {name: 'Uruguay', confederation: 'CONMEBOL', rating: 85},
+            {name: 'Ecuador', confederation: 'CONMEBOL', rating: 80}, {name: 'Chile', confederation: 'CONMEBOL', rating: 78},
+            {name: 'Peru', confederation: 'CONMEBOL', rating: 77}, {name: 'Venezuela', confederation: 'CONMEBOL', rating: 76},
+            {name: 'Paraguay', confederation: 'CONMEBOL', rating: 75}, {name: 'Bolivia', confederation: 'CONMEBOL', rating: 70},
+            // UEFA (20)
+            {name: 'France', confederation: 'UEFA', rating: 91}, {name: 'Spain', confederation: 'UEFA', rating: 90},
+            {name: 'England', confederation: 'UEFA', rating: 89}, {name: 'Portugal', confederation: 'UEFA', rating: 88},
+            {name: 'Germany', confederation: 'UEFA', rating: 88}, {name: 'Netherlands', confederation: 'UEFA', rating: 87},
+            {name: 'Italy', confederation: 'UEFA', rating: 86}, {name: 'Belgium', confederation: 'UEFA', rating: 86},
+            {name: 'Croatia', confederation: 'UEFA', rating: 84}, {name: 'Switzerland', confederation: 'UEFA', rating: 82},
+            {name: 'Denmark', confederation: 'UEFA', rating: 81}, {name: 'Austria', confederation: 'UEFA', rating: 80},
+            {name: 'Ukraine', confederation: 'UEFA', rating: 79}, {name: 'Turkey', confederation: 'UEFA', rating: 79},
+            {name: 'Poland', confederation: 'UEFA', rating: 78}, {name: 'Sweden', confederation: 'UEFA', rating: 78},
+            {name: 'Norway', confederation: 'UEFA', rating: 79}, {name: 'Hungary', confederation: 'UEFA', rating: 77},
+            {name: 'Scotland', confederation: 'UEFA', rating: 76}, {name: 'Wales', confederation: 'UEFA', rating: 76},
+            // AFC (24)
+            {name: 'Japan', confederation: 'AFC', rating: 85}, {name: 'South Korea', confederation: 'AFC', rating: 83},
+            {name: 'Iran', confederation: 'AFC', rating: 81}, {name: 'Australia', confederation: 'AFC', rating: 80},
+            {name: 'Saudi Arabia', confederation: 'AFC', rating: 78}, {name: 'Qatar', confederation: 'AFC', rating: 77},
+            {name: 'Iraq', confederation: 'AFC', rating: 75}, {name: 'Uzbekistan', confederation: 'AFC', rating: 74},
+            {name: 'Jordan', confederation: 'AFC', rating: 73}, {name: 'Thailand', confederation: 'AFC', rating: 73},
+            {name: 'UAE', confederation: 'AFC', rating: 72}, {name: 'Oman', confederation: 'AFC', rating: 71},
+            {name: 'Bahrain', confederation: 'AFC', rating: 70}, {name: 'China', confederation: 'AFC', rating: 69},
+            {name: 'Vietnam', confederation: 'AFC', rating: 69}, {name: 'Syria', confederation: 'AFC', rating: 68},
+            {name: 'Indonesia', confederation: 'AFC', rating: 68}, {name: 'North Korea', confederation: 'AFC', rating: 67},
+            {name: 'Tajikistan', confederation: 'AFC', rating: 67}, {name: 'Malaysia', confederation: 'AFC', rating: 67},
+            {name: 'Kyrgyzstan', confederation: 'AFC', rating: 66}, {name: 'Kuwait', confederation: 'AFC', rating: 65},
+            {name: 'Philippines', confederation: 'AFC', rating: 64}, {name: 'Singapore', confederation: 'AFC', rating: 62},
+            // CAF (10)
+            {name: 'Morocco', confederation: 'CAF', rating: 84}, {name: 'Senegal', confederation: 'CAF', rating: 83},
+            {name: 'Ivory Coast', confederation: 'CAF', rating: 82}, {name: 'Nigeria', confederation: 'CAF', rating: 81},
+            {name: 'Egypt', confederation: 'CAF', rating: 80}, {name: 'Algeria', confederation: 'CAF', rating: 79},
+            {name: 'Cameroon', confederation: 'CAF', rating: 77}, {name: 'Mali', confederation: 'CAF', rating: 76},
+            {name: 'Tunisia', confederation: 'CAF', rating: 76}, {name: 'Ghana', confederation: 'CAF', rating: 75},
+            // CONCACAF (6)
+            {name: 'Mexico', confederation: 'CONCACAF', rating: 82}, {name: 'USA', confederation: 'CONCACAF', rating: 81},
+            {name: 'Canada', confederation: 'CONCACAF', rating: 78}, {name: 'Panama', confederation: 'CONCACAF', rating: 75},
+            {name: 'Costa Rica', confederation: 'CONCACAF', rating: 74}, {name: 'Jamaica', confederation: 'CONCACAF', rating: 72},
+            // OFC (2)
+            {name: 'New Zealand', confederation: 'OFC', rating: 72}, {name: 'Fiji', confederation: 'OFC', rating: 58}
         ];
     }
 </script>
