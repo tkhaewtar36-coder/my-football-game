@@ -2,78 +2,67 @@
 
 {% block content %}
 <style>
-    .wc-container { padding: 15px; text-align: center; font-family: 'Segoe UI', sans-serif; }
+    .wc-container { padding: 15px; text-align: center; }
     .wc-title { color: #fff; font-size: 24px; margin-bottom: 5px; }
     .wc-subtitle { color: #aaa; font-size: 13px; margin-bottom: 20px; }
     
-    .btn-action { background: #ff5500; color: #fff; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; margin: 5px; font-size: 14px; box-shadow: 0 4px 10px rgba(255,85,0,0.3); }
-    .btn-spin { background: #00e676; color: #000; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; margin: 5px; font-size: 14px; box-shadow: 0 4px 10px rgba(0,230,118,0.3); }
-    .btn-action:hover, .btn-spin:hover { transform: scale(1.03); }
+    .btn-action { background: #ff5500; color: #fff; font-weight: bold; padding: 12px 20px; border-radius: 25px; border: none; cursor: pointer; margin: 5px; font-size: 14px; }
+    .btn-spin { background: #00e676; color: #000; font-weight: bold; padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; margin: 5px; font-size: 14px; }
 
-    /* 3D Spinner Wheel Box */
-    .slot-machine-box { background: linear-gradient(145deg, #0d0d0d, #1a1a1a); border: 2px solid #ff5500; border-radius: 12px; padding: 20px; margin: 20px auto; max-width: 600px; box-shadow: 0 0 15px rgba(255,85,0,0.2); }
-    .slot-display { font-size: 26px; font-weight: bold; color: #ffdd00; min-height: 45px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 8px; border: 1px solid #333; text-shadow: 0 0 8px rgba(255,221,0,0.6); }
+    .slot-box { background: #000; border: 2px solid #ff5500; border-radius: 12px; padding: 15px; margin: 20px auto; max-width: 650px; }
+    .slot-display { font-size: 22px; font-weight: bold; color: #ffdd00; min-height: 40px; display: flex; align-items: center; justify-content: center; }
 
     .section-box { background: #181818; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 25px; text-align: left; }
-    .section-header { color: #ff5500; font-size: 16px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 0; display: flex; justify-content: space-between; align-items: center; }
+    .section-header { color: #ff5500; font-size: 16px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 0; }
 
-    .grid-confed { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
-    .confed-card { background: #222; border: 1px solid #3d3d3d; border-radius: 8px; padding: 12px; }
-    .confed-title { color: #00ffcc; font-size: 14px; font-weight: bold; margin-top: 0; border-bottom: 1px dashed #444; padding-bottom: 4px; }
+    .confed-block { background: #222; border: 1px solid #3d3d3d; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
+    .confed-header { color: #00ffcc; font-size: 15px; font-weight: bold; border-bottom: 1px dashed #444; padding-bottom: 5px; margin-bottom: 10px; }
+
+    .qual-group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .qual-group-card { background: #181818; border: 1px solid #333; border-radius: 6px; padding: 10px; }
+    .qual-group-title { color: #ffb703; font-size: 13px; font-weight: bold; margin-top: 0; border-bottom: 1px solid #222; padding-bottom: 3px; }
 
     .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
     .group-card { background: #1f1f1f; border: 1px solid #333; border-radius: 8px; padding: 12px; }
     .group-title { color: #ff5500; font-size: 15px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 0; }
 
-    .team-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #2a2a2a; font-size: 13px; color: #eee; }
-    .badge-q { background: #28a745; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
-    .badge-confed { background: #333; color: #ffb703; font-size: 10px; padding: 2px 5px; border-radius: 3px; }
+    .team-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #2a2a2a; font-size: 12px; color: #eee; }
 </style>
 
 <div class="wc-container">
-    <h1 class="wc-title">🌍 FIFA World Cup Dynamic Draw & Qualifiers Engine</h1>
-    <p class="wc-subtitle">ระบบลูกหมุนเสี่ยงทายสุ่มจับฉลากจริง (ปลดล็อกระบบ ไม่ล็อกประเทศ ได้ลุ้นทีมเล็กพลิกล็อก เข้ารอบ 32 ทีม)</p>
+    <h1 class="wc-title">🌍 FIFA World Cup Qualifiers Stage Engine</h1>
+    <p class="wc-subtitle">ระบบจับฉลากแบ่งกลุ่มรอบคัดเลือกตามทวีป (Qualifiers Draw) ก่อนเข้าสู่รอบ 32 ทีมสุดท้าย</p>
 
-    <div style="margin-bottom: 10px;">
-        <button class="btn-action" onclick="runContinentalQualifiers()">⚽ 1. จำลองรอบคัดเลือกทวีป (สุ่มผลลัพธ์ใหม่)</button>
-        <button class="btn-spin" id="btnDrawFinal" onclick="spinWheelDraw()" disabled style="opacity: 0.5;">🎰 2. หมุนลูกบอลจับฉลากเข้ากลุ่ม A-H (Draw Spinner)</button>
+    <div>
+        <button class="btn-action" onclick="drawQualifiersGroups()">🎲 1. หมุนจับฉลากแบ่งกลุ่มรอบคัดเลือก (แยกตามทวีป)</button>
+        <button class="btn-spin" id="btnFinalDraw" onclick="drawFinal32Groups()" disabled style="opacity: 0.5;">🎰 2. หมุนจับฉลากรอบสุดท้าย (32 ทีม Group A-H)</button>
     </div>
 
-    <!-- SPINNER WHEEL ANIMATION WIDGET -->
-    <div class="slot-machine-box">
-        <div style="font-size: 12px; color: #aaa; margin-bottom: 8px;">🎰 วงล้อลูกหมุนสุ่มทีมเข้ากลุ่ม (LIVE DRAW SPINNER)</div>
-        <div id="spiningBall" class="slot-display">กด "1. จำลองรอบคัดเลือกทวีป" เพื่อเตรียมโถจับฉลาก</div>
+    <div class="slot-box">
+        <div style="font-size: 11px; color: #aaa; margin-bottom: 5px;">🎰 วงล้อหมุนสุ่มจับฉลาก (QUALIFIERS SPINNER)</div>
+        <div id="spiningBall" class="slot-display">กดปุ่ม "1. หมุนจับฉลากแบ่งกลุ่มรอบคัดเลือก" เพื่อเริ่มแบ่งกลุ่มทวีป</div>
     </div>
 
-    <!-- STEP 1: CONTINENTAL QUALIFIERS SECTION -->
+    <!-- STEP 1: CONTINENTAL QUALIFIERS GROUPS -->
     <div class="section-box">
-        <h3 class="section-header">
-            <span>🌏 ผลรอบคัดเลือกแยกทวีป (Continental Qualifiers Result)</span>
-            <span style="font-size: 12px; color: #aaa;">โควตา: UEFA 13, CONMEBOL 5, AFC 6, CAF 4, CONCACAF 3, OFC 1</span>
-        </h3>
-        <div class="grid-confed" id="qualifiersContainer">
-            <div style="color: #666; font-size: 13px; padding: 10px;">กดปุ่มจำลองรอบคัดเลือกเพื่อเริ่มสุ่มผู้ผ่านเข้ารอบ...</div>
+        <h3 class="section-header">🌏 การแบ่งกลุ่มรอบคัดเลือกของแต่ละทวีป (Continental Qualifiers Groups)</h3>
+        <div id="qualifiersDrawContainer">
+            <div style="color: #666; font-size: 13px; padding: 10px;">รอกดปุ่มสุ่มจับฉลากแบ่งกลุ่มทวีป...</div>
         </div>
     </div>
 
-    <!-- STEP 2: WORLD CUP 32 FINAL GROUPS -->
+    <!-- STEP 2: WORLD CUP FINAL GROUPS -->
     <div class="section-box">
-        <h3 class="section-header">🏆 ผลการจับฉลากแบ่งกลุ่มรอบสุดท้าย (World Cup 32 Final Groups A-H)</h3>
-        <div class="group-grid" id="finalGroupsContainer">
-            <!-- Groups A-H -->
-        </div>
+        <h3 class="section-header">🏆 ผลการจับฉลากรอบสุดท้าย 32 ทีม (World Cup Group A - H)</h3>
+        <div class="group-grid" id="finalGroupsContainer"></div>
     </div>
 </div>
 
 <script>
     const finalGroups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-    const slots = { 'UEFA': 13, 'CONMEBOL': 5, 'AFC': 6, 'CAF': 4, 'CONCACAF': 3, 'OFC': 1 };
-    
-    let qualified32Teams = [];
+    let qualifiersData = null;
 
-    window.onload = function() {
-        initEmptyFinalGroups();
-    };
+    window.onload = function() { initEmptyFinalGroups(); };
 
     function initEmptyFinalGroups() {
         const container = document.getElementById('finalGroupsContainer');
@@ -82,116 +71,111 @@
             container.innerHTML += `
                 <div class="group-card">
                     <h4 class="group-title">📌 Group ${g}</h4>
-                    <div id="final-group-${g}">
-                        <div style="color:#555; font-size:12px; text-align:center; padding:15px;">รอจับฉลาก...</div>
-                    </div>
+                    <div id="final-group-${g}"><div style="color:#555; font-size:12px; text-align:center; padding:15px;">รอจับฉลากรอบสุดท้าย...</div></div>
                 </div>
             `;
         });
     }
 
-    // 1. จำลองรอบคัดเลือกสุ่มผลใหม่ (ไม่ล็อกประเทศ)
-    function runContinentalQualifiers() {
-        fetch('/api/teams')
+    // 1. หมุนจับฉลากแบ่งกลุ่มรอบคัดเลือกในแต่ละทวีป
+    function drawQualifiersGroups() {
+        let spinner = document.getElementById('spiningBall');
+        spinner.innerHTML = "⚽ 🎰 กำลังหมุนจับฉลากแบ่งกลุ่มรอบคัดเลือกแต่ละทวีป...";
+
+        fetch('/api/draw-qualifiers-groups')
             .then(res => res.json())
-            .then(teams => {
-                let nationalTeams = teams.filter(t => t.type === 'National' || t.league.includes('World Cup'));
-                if (nationalTeams.length === 0) nationalTeams = getFallbackNationalTeams();
-                processQualifiers(nationalTeams);
-            })
-            .catch(() => {
-                processQualifiers(getFallbackNationalTeams());
+            .then(data => {
+                qualifiersData = data;
+                renderQualifiersGroups(data);
+
+                spinner.innerHTML = "✅ จับฉลากกลุ่มรอบคัดเลือกทุกทวีปเสร็จสิ้น!";
+                document.getElementById('btnFinalDraw').disabled = false;
+                document.getElementById('btnFinalDraw').style.opacity = "1";
             });
     }
 
-    function processQualifiers(allTeams) {
-        let confedMap = { 'UEFA': [], 'CONMEBOL': [], 'AFC': [], 'CAF': [], 'CONCACAF': [], 'OFC': [] };
-        
-        allTeams.forEach(t => {
-            let c = t.confederation || 'UEFA';
-            if (confedMap[c]) confedMap[c].push(t);
-            else confedMap['UEFA'].push(t);
-        });
-
-        const qContainer = document.getElementById('qualifiersContainer');
+    function renderQualifiersGroups(data) {
+        const qContainer = document.getElementById('qualifiersDrawContainer');
         qContainer.innerHTML = '';
-        qualified32Teams = [];
 
-        Object.keys(slots).forEach(cName => {
-            let teamsInConfed = confedMap[cName] || [];
+        Object.keys(data).forEach(cName => {
+            let confedGroups = data[cName];
             
-            // 🔥 ปลดล็อกการล็อกประเทศ: ใช้การสุ่มแต้มอย่างอิสระ (Random Luck Weight) ทำให้ทีมเล็กพลิกล็อกเข้ารอบได้
-            teamsInConfed.sort((a, b) => {
-                let luckA = (a.rating * 0.4) + (Math.random() * 60);
-                let luckB = (b.rating * 0.4) + (Math.random() * 60);
-                return luckB - luckA;
-            });
-
-            let passed = teamsInConfed.slice(0, slots[cName]);
-            qualified32Teams.push(...passed);
+            // นับจำนวนทีมทั้งหมดในทวีปนี้
+            let totalTeams = 0;
+            Object.values(confedGroups).forEach(arr => totalTeams += arr.length);
 
             let html = `
-                <div class="confed-card">
-                    <h5 class="confed-title">🌏 โซน ${cName} (ตั๋ว ${slots[cName]} ทีม)</h5>
+                <div class="confed-block">
+                    <div class="confed-header">🌏 โซน ${cName} (รวม ${totalTeams} ประเทศ)</div>
+                    <div class="qual-group-grid">
             `;
-            
-            teamsInConfed.forEach((t, idx) => {
-                let isQualified = idx < slots[cName];
-                let badge = isQualified ? '<span class="badge-q">เข้ารอบ</span>' : '<span style="color:#666; font-size:10px;">ตกรอบ</span>';
+
+            Object.keys(confedGroups).forEach(gName => {
+                let teamList = confedGroups[gName];
                 html += `
-                    <div class="team-row">
-                        <span>${idx + 1}. ${t.name}</span>
-                        ${badge}
-                    </div>
+                    <div class="qual-group-card">
+                        <div class="qual-group-title">📌 ${gName}</div>
                 `;
+
+                teamList.forEach((t, idx) => {
+                    html += `
+                        <div class="team-row">
+                            <span>${idx + 1}. ${t.name}</span>
+                            <span style="color:#aaa; font-size:10px;">พลัง ${t.rating}</span>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
             });
 
-            html += `</div>`;
+            html += `</div></div>`;
             qContainer.innerHTML += html;
         });
-
-        document.getElementById('spiningBall').innerHTML = "✅ โถ Pot 1-4 พร้อมแล้ว! กดปุ่มลูกหมุนเพื่อจับฉลาก";
-        const btn = document.getElementById('btnDrawFinal');
-        btn.disabled = false;
-        btn.style.opacity = "1";
     }
 
-    // 2. หมุนวงล้อลูกบอลจับฉลากหยอดลงกลุ่ม A-H ทีละทีม (Slot Spinner Animation)
-    function spinWheelDraw() {
-        if (qualified32Teams.length === 0) return;
-        
+    // 2. จับฉลากรอบ 32 ทีมสุดท้าย (Group A-H)
+    function drawFinal32Groups() {
+        if (!qualifiersData) return;
         initEmptyFinalGroups();
-        
-        let shuffled = [...qualified32Teams];
-        for (let i = shuffled.length - 1; i > 0; i--) {
+
+        // ดึงตัวแทนทวีปมาจับฉลากเข้า Group A-H
+        let allTeams = [];
+        Object.values(qualifiersData).forEach(cGroups => {
+            Object.values(cGroups).forEach(tList => {
+                allTeams.push(...tList);
+            });
+        });
+
+        // สุ่ม 32 ทีมแบบอิสระ
+        for (let i = allTeams.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            [allTeams[i], allTeams[j]] = [allTeams[j], allTeams[i]];
         }
+        let finalists = allTeams.slice(0, 32);
 
         let spinner = document.getElementById('spiningBall');
         let index = 0;
 
-        function pickNextTeam() {
-            if (index >= shuffled.length) {
-                spinner.innerHTML = "🎉 การจับฉลากเสร็จสิ้นสมบูรณ์ครบทั้ง 32 ทีม!";
+        function spinNext() {
+            if (index >= finalists.length) {
+                spinner.innerHTML = "🎉 จับฉลากรอบสุดท้าย 32 ทีมสมบูรณ์!";
                 return;
             }
 
-            let currentTeam = shuffled[index];
-            let rollCount = 0;
+            let currentTeam = finalists[index];
+            let rolls = 0;
 
-            // เอฟเฟกต์หมุนสุ่มชื่อก่อนหยุดที่ทีมจริง
-            let rollInterval = setInterval(() => {
-                let randomTemp = shuffled[Math.floor(Math.random() * shuffled.length)];
-                spinner.innerHTML = `⚽ 🎰 กำลังหมุน: <span style="color:#ff5500;">${randomTemp.name}</span> (${randomTemp.confederation || 'UEFA'})`;
-                rollCount++;
+            let timer = setInterval(() => {
+                let randTeam = finalists[Math.floor(Math.random() * finalists.length)];
+                spinner.innerHTML = `⚽ 🎰 หมุนจับฉลาก: <span style="color:#ff5500;">${randTeam.name}</span> (${randTeam.confederation || 'AFC'})`;
+                rolls++;
 
-                if (rollCount > 8) {
-                    clearInterval(rollInterval);
+                if (rolls > 6) {
+                    clearInterval(timer);
                     
-                    // ปักป้ายใส่กลุ่ม
-                    let groupIdx = index % 8;
-                    let groupLetter = finalGroups[groupIdx];
+                    let groupLetter = finalGroups[index % 8];
                     let listContainer = document.getElementById(`final-group-${groupLetter}`);
 
                     if (listContainer.children[0] && listContainer.children[0].innerText.includes('รอจับฉลาก')) {
@@ -201,44 +185,18 @@
                     listContainer.innerHTML += `
                         <div class="team-row">
                             <span><b>${listContainer.children.length + 1}.</b> ${currentTeam.name}</span>
-                            <span class="badge-confed">${currentTeam.confederation || 'UEFA'}</span>
+                            <span style="color:#ffb703; font-size:10px;">${currentTeam.confederation || 'AFC'}</span>
                         </div>
                     `;
 
-                    spinner.innerHTML = `🎉 ออกแล้ว! <span style="color:#00e676;">${currentTeam.name}</span> ➔ อยู่ Group ${groupLetter}`;
-
+                    spinner.innerHTML = `🎉 <span style="color:#00e676;">${currentTeam.name}</span> ➔ เข้า Group ${groupLetter}`;
                     index++;
-                    setTimeout(pickNextTeam, 120); // ลุยจับทีมต่อไป
+                    setTimeout(spinNext, 90);
                 }
-            }, 50);
+            }, 40);
         }
 
-        pickNextTeam();
-    }
-
-    function getFallbackNationalTeams() {
-        return [
-            {name: 'Argentina', confederation: 'CONMEBOL', rating: 92}, {name: 'Brazil', confederation: 'CONMEBOL', rating: 90},
-            {name: 'Colombia', confederation: 'CONMEBOL', rating: 86}, {name: 'Uruguay', confederation: 'CONMEBOL', rating: 85},
-            {name: 'Ecuador', confederation: 'CONMEBOL', rating: 80}, {name: 'Chile', confederation: 'CONMEBOL', rating: 78},
-            {name: 'France', confederation: 'UEFA', rating: 91}, {name: 'Spain', confederation: 'UEFA', rating: 90},
-            {name: 'England', confederation: 'UEFA', rating: 89}, {name: 'Portugal', confederation: 'UEFA', rating: 88},
-            {name: 'Germany', confederation: 'UEFA', rating: 88}, {name: 'Netherlands', confederation: 'UEFA', rating: 87},
-            {name: 'Italy', confederation: 'UEFA', rating: 86}, {name: 'Belgium', confederation: 'UEFA', rating: 86},
-            {name: 'Croatia', confederation: 'UEFA', rating: 84}, {name: 'Switzerland', confederation: 'UEFA', rating: 82},
-            {name: 'Denmark', confederation: 'UEFA', rating: 81}, {name: 'Austria', confederation: 'UEFA', rating: 80},
-            {name: 'Poland', confederation: 'UEFA', rating: 78}, {name: 'Sweden', confederation: 'UEFA', rating: 78},
-            {name: 'Japan', confederation: 'AFC', rating: 85}, {name: 'South Korea', confederation: 'AFC', rating: 83},
-            {name: 'Iran', confederation: 'AFC', rating: 81}, {name: 'Australia', confederation: 'AFC', rating: 80},
-            {name: 'Qatar', confederation: 'AFC', rating: 77}, {name: 'Saudi Arabia', confederation: 'AFC', rating: 78},
-            {name: 'Iraq', confederation: 'AFC', rating: 75}, {name: 'Thailand', confederation: 'AFC', rating: 73},
-            {name: 'Morocco', confederation: 'CAF', rating: 84}, {name: 'Senegal', confederation: 'CAF', rating: 83},
-            {name: 'Ivory Coast', confederation: 'CAF', rating: 82}, {name: 'Egypt', confederation: 'CAF', rating: 80},
-            {name: 'Nigeria', confederation: 'CAF', rating: 81}, {name: 'Algeria', confederation: 'CAF', rating: 79},
-            {name: 'USA', confederation: 'CONCACAF', rating: 81}, {name: 'Mexico', confederation: 'CONCACAF', rating: 82},
-            {name: 'Canada', confederation: 'CONCACAF', rating: 78}, {name: 'Costa Rica', confederation: 'CONCACAF', rating: 74},
-            {name: 'New Zealand', confederation: 'OFC', rating: 72}, {name: 'Fiji', confederation: 'OFC', rating: 58}
-        ];
+        spinNext();
     }
 </script>
 {% endblock %}
