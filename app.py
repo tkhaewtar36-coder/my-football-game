@@ -122,3 +122,42 @@ def api_draw_qualifiers_live():
         'qualifiers_summary': qualifiers_summary,
         'qualified_32': qualified_32
     })
+import random
+import sqlite3
+from flask import jsonify
+
+@app.route('/api/draw-qualifiers-groups')
+def api_draw_qualifiers_groups():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, confederation, rating FROM teams WHERE type = 'National'")
+    teams = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    # 1. จัดกลุ่มทีมแยกตามทวีป
+    confeds = {'AFC': [], 'UEFA': [], 'CONMEBOL': [], 'CAF': [], 'CONCACAF': [], 'OFC': []}
+    for t in teams:
+        c = t.get('confederation') or 'AFC'
+        if c in confeds:
+            confeds[c].append(t)
+        else:
+            confeds['AFC'].append(t)
+
+    # 2. จับฉลากแบ่งกลุ่มภายในทวีปนั้นๆ (เช่น AFC 24 ทีม แบ่งเป็น 4 กลุ่ม A-D)
+    confed_draw_results = {}
+    
+    # กำหนดจำนวนกลุ่มของแต่ละทวีป
+    group_counts = {'AFC': 4, 'UEFA': 4, 'CONMEBOL': 2, 'CAF': 2, 'CONCACAF': 2, 'OFC': 1}
+
+    for c_name, team_list in confeds.items():
+        random.shuffle(team_list)
+        n_groups = group_counts.get(c_name, 2)
+        
+        groups_dict = {f'Group {chr(65+i)}': [] for i in range(n_groups)}
+        for idx, team in enumerate(team_list):
+            g_key = f'Group {chr(65 + (idx % n_groups))}'
+            groups_dict[g_key].append(team)
+            
+        confed_draw_results[c_name] = groups_dict
+
+    return jsonify(confed_draw_results)
