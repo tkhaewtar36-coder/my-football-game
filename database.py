@@ -114,3 +114,61 @@ def init_db(conn):
     ''', TROPHIES_HISTORY_SAMPLES)
 
     conn.commit()
+
+# =========================================================================
+# 🚀 เพิ่มส่วนต่อขยาย: ฟังก์ชันสุ่มจับฉลากรอบคัดเลือกทวีป & รอบสุดท้าย 32 ทีม
+# =========================================================================
+
+def generate_qualifiers_and_draw(conn):
+    """
+    1. ดึงทีมชาติทั้งหมดแยกตามทวีป (Confederation)
+    2. สุ่มจับฉลากรอบคัดเลือกในทวีปตัวเอง
+    3. สิมูเลตหาผู้ผ่านเข้ารอบตามโควตาจริงเพื่อไปจับฉลากฟุตบอลโลกรอบสุดท้าย (A-H)
+    """
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, confederation, rating, fifa_ranking FROM teams WHERE type = 'National'")
+    national_teams = cursor.fetchall()
+
+    # แยกทีมตามทวีป
+    confeds = {}
+    for t in national_teams:
+        c = t['confederation'] or 'AFC'
+        if c not in confeds:
+            confeds[c] = []
+        confeds[c].append(dict(t))
+
+    # 1. จับฉลากแบ่งกลุ่มรอบคัดเลือกแยกตามทวีป
+    qualifier_groups = {}
+    for c_name, t_list in confeds.items():
+        random.shuffle(t_list)
+        # ถ้าทีมเยอะ ให้แบ่งเป็น 2 กลุ่ม (เช่น Group A, Group B ของทวีปนั้น)
+        num_groups = 2 if len(t_list) >= 8 else 1
+        qualifier_groups[c_name] = {f'Group {chr(65+i)}': [] for i in range(num_groups)}
+        
+        for idx, team in enumerate(t_list):
+            g_key = f'Group {chr(65 + (idx % num_groups))}'
+            qualifier_groups[c_name][g_key].append(team)
+
+    # 2. จำลองทีมผู้ชนะผ่านเข้ารอบสุดท้าย 32 ทีม (อิงตามโควตาจริง)
+    # โควตา: UEFA 13, CONMEBOL 5, AFC 6, CAF 4, CONCACAF 3, OFC 1
+    quotas = {'UEFA': 13, 'CONMEBOL': 5, 'AFC': 6, 'CAF': 4, 'CONCACAF': 3, 'OFC': 1}
+    qualified_finalists = []
+
+    for c_name, quota in quotas.items():
+        teams_in_c = confeds.get(c_name, [])
+        # คำนวณความสามารถ + ค่าสุ่มเพื่อหาทีมที่ผ่านรอบคัดเลือก
+        sorted_teams = sorted(teams_in_c, key=lambda x: x['rating'] + random.randint(-6, 6), reverse=True)
+        qualified_finalists.extend(sorted_teams[:quota])
+
+    # 3. จับฉลากฟุตบอลโลกรอบสุดท้าย (World Cup Groups A - H)
+    random.shuffle(qualified_finalists)
+    world_cup_groups = {f'Group {chr(65+i)}': [] for i in range(8)}
+    
+    for idx, team in enumerate(qualified_finalists):
+        group_key = f'Group {chr(65 + (idx % 8))}'
+        world_cup_groups[group_key].append(team)
+
+    return {
+        'qualifiers': qualifier_groups,
+        'world_cup_groups': world_cup_groups
+    }
